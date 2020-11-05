@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "470452011288",
+    "firebase_url": "https://messengerapp-a751f.firebaseio.com",
+    "project_id": "messengerapp-a751f",
+    "storage_bucket": "messengerapp-a751f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:470452011288:android:ede71a5e9c62954e5a1e6d",
+        "android_client_info": {
+          "package_name": "com.lecaoviethuy.messengerapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "470452011288-9udapfp504ern7tk5pfcf258p1kdh1a0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_MEWllgViOwyoq8EjHp1f_zM9ITXEt_Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "470452011288-9udapfp504ern7tk5pfcf258p1kdh1a0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
