@@ -12,16 +12,28 @@ import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.database.*
 import com.lecaoviethuy.messengerapp.fragments.ChatsFragment
 import com.lecaoviethuy.messengerapp.fragments.SearchFragment
 import com.lecaoviethuy.messengerapp.fragments.SettingsFragment
+import com.lecaoviethuy.messengerapp.modelClasses.User
+import com.squareup.picasso.Picasso
+import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
+
+    private var mUser : FirebaseUser? = null
+    private var refUser : DatabaseReference?= null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(findViewById(R.id.toolbar_main))
+
+        mUser = FirebaseAuth.getInstance().currentUser
+        refUser = FirebaseDatabase.getInstance().reference.child("Users").child(mUser!!.uid)
+
 
         val toolbar : Toolbar = findViewById(R.id.toolbar_main)
         setSupportActionBar(toolbar)
@@ -37,6 +49,22 @@ class MainActivity : AppCompatActivity() {
         viewPage.adapter = viewPagerAdapter
         tabLayout.setupWithViewPager(viewPage)
 
+        // load profile image
+        refUser!!.addValueEventListener(object : ValueEventListener{
+            override fun onCancelled(error: DatabaseError) {
+            }
+
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if(snapshot.exists()){
+                    val user : User? = snapshot.getValue(User::class.java)
+                    tv_username.text = user!!.getUsername()
+                    Picasso.get()
+                        .load(user.getProfile())
+                        .placeholder(R.drawable.avatar)
+                        .into(iv_avatar)
+                }
+            }
+        })
 
     }
 
