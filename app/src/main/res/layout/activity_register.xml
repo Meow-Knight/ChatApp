@@ -34,7 +34,7 @@
             android:id="@+id/edt_username_register"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textEmailAddress"
+            android:inputType="text"
             android:hint="Username"
             android:textColor="@android:color/white"
             android:textColorHint="@android:color/white"/>
@@ -44,6 +44,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="textEmailAddress"
+            android:layout_marginTop="15dp"
             android:hint="Email"
             android:textColor="@android:color/white"
             android:textColorHint="@android:color/white"/>

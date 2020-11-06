@@ -1,5 +1,6 @@
 package com.lecaoviethuy.messengerapp
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -10,6 +11,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
+import com.google.firebase.auth.FirebaseAuth
 import com.lecaoviethuy.messengerapp.fragments.ChatsFragment
 import com.lecaoviethuy.messengerapp.fragments.SearchFragment
 import com.lecaoviethuy.messengerapp.fragments.SettingsFragment
@@ -49,7 +51,14 @@ class MainActivity : AppCompatActivity() {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
-            R.id.action_settings -> true
+            R.id.action_logout -> {
+                FirebaseAuth.getInstance().signOut()
+                val intent = Intent(this@MainActivity, WelcomeActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
+                startActivity(intent)
+                finish()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
