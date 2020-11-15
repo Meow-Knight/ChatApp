@@ -52,8 +52,8 @@ class RegisterActivity : AppCompatActivity() {
                         val userHashMap = HashMap<String, Any>()
                         userHashMap["uid"] = firebaseUserId
                         userHashMap["username"] = username
-                        userHashMap["profile"] = "https://firebasestorage.googleapis.com/v0/b/messengerapp-a751f.appspot.com/o/profile.png?alt=media&token=cf6fe803-7d8e-4545-9014-09cd4c705b88"
-                        userHashMap["background"] = "https://firebasestorage.googleapis.com/v0/b/messengerapp-a751f.appspot.com/o/background.jpg?alt=media&token=0701a80a-4ceb-40a5-91f1-31328f30bb8a"
+                        userHashMap["profile"] = "https://firebasestorage.googleapis.com/v0/b/messengerapp-a751f.appspot.com/o/avatar%2Fdefault-user-image.png?alt=media&token=179982bf-5ad2-447d-a708-4af695e5dee0"
+                        userHashMap["background"] = "https://firebasestorage.googleapis.com/v0/b/messengerapp-a751f.appspot.com/o/background%2Fpexels-daniel-pixelflow-376723.jpg?alt=media&token=4d2dccad-3dd9-412c-a6ad-2d88c43580be"
                         userHashMap["status"] = "offline"
                         userHashMap["search"] = username.toLowerCase()
                         userHashMap["facebook"] = "https://m.fb.com"
