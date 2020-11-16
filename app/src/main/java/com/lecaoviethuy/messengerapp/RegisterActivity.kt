@@ -53,7 +53,7 @@ class RegisterActivity : AppCompatActivity() {
                         userHashMap["uid"] = firebaseUserId
                         userHashMap["username"] = username
                         userHashMap["profile"] = "https://firebasestorage.googleapis.com/v0/b/messengerapp-a751f.appspot.com/o/avatar%2Fdefault-user-image.png?alt=media&token=179982bf-5ad2-447d-a708-4af695e5dee0"
-                        userHashMap["background"] = "https://firebasestorage.googleapis.com/v0/b/messengerapp-a751f.appspot.com/o/background%2Fpexels-daniel-pixelflow-376723.jpg?alt=media&token=4d2dccad-3dd9-412c-a6ad-2d88c43580be"
+                        userHashMap["cover"] = "https://firebasestorage.googleapis.com/v0/b/messengerapp-a751f.appspot.com/o/background%2Fpexels-daniel-pixelflow-376723.jpg?alt=media&token=4d2dccad-3dd9-412c-a6ad-2d88c43580be"
                         userHashMap["status"] = "offline"
                         userHashMap["search"] = username.toLowerCase()
                         userHashMap["facebook"] = "https://m.fb.com"
