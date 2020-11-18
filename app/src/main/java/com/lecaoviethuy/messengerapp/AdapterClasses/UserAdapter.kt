@@ -1,11 +1,16 @@
 package com.lecaoviethuy.messengerapp.AdapterClasses
 
+import android.app.AlertDialog
 import android.content.Context
+import android.content.DialogInterface
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.lecaoviethuy.messengerapp.MainActivity
+import com.lecaoviethuy.messengerapp.MessageChatActivity
 import com.lecaoviethuy.messengerapp.R
 import com.lecaoviethuy.messengerapp.modelClasses.User
 import com.squareup.picasso.Picasso
@@ -61,5 +66,29 @@ class UserAdapter (mContext : Context,
             .load(user.getProfile())
             .placeholder(R.drawable.avatar)
             .into(holder.profileImage)
+
+        holder.itemView.setOnClickListener {
+            val options = arrayOf<CharSequence>(
+                "Send Message",
+                "Visit Profile"
+            );
+
+            val builder: AlertDialog.Builder = AlertDialog.Builder(mContext);
+            builder.setTitle("What do you want?");
+            builder.setItems(options, DialogInterface.OnClickListener{ dialog, position ->
+                if (position == 0) {
+                    val intent = Intent(mContext, MessageChatActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.putExtra("visit_id", user.getUid());
+                    mContext.startActivity(intent);
+                }
+
+                if (position == 1) {
+
+                }
+            })
+
+            builder.show();
+        }
     }
 }
