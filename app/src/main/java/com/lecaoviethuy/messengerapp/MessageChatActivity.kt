@@ -7,6 +7,8 @@ import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.tasks.Continuation
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
@@ -18,6 +20,8 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageTask
 import com.google.firebase.storage.UploadTask
+import com.lecaoviethuy.messengerapp.AdapterClasses.ChatsAdapter
+import com.lecaoviethuy.messengerapp.modelClasses.Chat
 import com.lecaoviethuy.messengerapp.modelClasses.User
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_message_chat.*
@@ -25,6 +29,9 @@ import kotlinx.android.synthetic.main.activity_message_chat.*
 class MessageChatActivity : AppCompatActivity() {
     var userIdVisit : String = "";
     var firebaseUser : FirebaseUser ? = null;
+    var chatsAdapter : ChatsAdapter? = null;
+    var mChatList : List<Chat>? = null;
+    lateinit var recycler_view_chats : RecyclerView;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,6 +42,14 @@ class MessageChatActivity : AppCompatActivity() {
         // Current user
         firebaseUser = FirebaseAuth.getInstance().currentUser;
 
+        // Recycler view message
+        recycler_view_chats = findViewById(R.id.recycler_view_chats);
+        recycler_view_chats.setHasFixedSize(true);
+
+        var linearLayoutManager = LinearLayoutManager(applicationContext);
+        linearLayoutManager.stackFromEnd = true;
+        recycler_view_chats.layoutManager = linearLayoutManager;
+
         // visit User
         val reference = FirebaseDatabase.getInstance().reference
             .child("Users").child(userIdVisit);
@@ -44,7 +59,12 @@ class MessageChatActivity : AppCompatActivity() {
                 val user: User? = snapshot.getValue(User::class.java);
 
                 username_mchat.text = user!!.getUsername();
-                Picasso.get().load(user.getProfile()).into(profile_image_mchat);
+                Picasso.get()
+                    .load(user.getProfile())
+                    .placeholder(R.drawable.avatar)
+                    .into(profile_image_mchat);
+
+                retrieveMessage(firebaseUser!!.uid, userIdVisit, user.getProfile());
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -177,5 +197,31 @@ class MessageChatActivity : AppCompatActivity() {
                 }
             };
         }
+    }
+
+    private fun retrieveMessage(senderId: String, receiverId: String?, receiverImageUrl: String?) {
+        mChatList = ArrayList();
+        val reference = FirebaseDatabase.getInstance().reference.child("Chats");
+
+        reference.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                (mChatList as ArrayList<Chat>).clear();
+                for (shot in snapshot.children) {
+                    val chat = shot.getValue(Chat::class.java);
+
+                    if (chat!!.getReceiver().equals(senderId) && chat.getSender().equals(receiverId)
+                        || chat.getReceiver().equals(receiverId) && chat.getSender().equals(senderId)) {
+                        (mChatList as ArrayList<Chat>).add(chat);
+                    }
+
+                    chatsAdapter = ChatsAdapter(this@MessageChatActivity, mChatList as ArrayList<Chat>, receiverImageUrl!!);
+                    recycler_view_chats.adapter = chatsAdapter;
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(this@MessageChatActivity, error.message, Toast.LENGTH_SHORT).show();
+            }
+        })
     }
 }
