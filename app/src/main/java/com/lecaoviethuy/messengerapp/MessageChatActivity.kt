@@ -7,16 +7,14 @@ import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
+import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.tasks.Continuation
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageTask
 import com.google.firebase.storage.UploadTask
@@ -31,11 +29,25 @@ class MessageChatActivity : AppCompatActivity() {
     var firebaseUser : FirebaseUser ? = null;
     var chatsAdapter : ChatsAdapter? = null;
     var mChatList : List<Chat>? = null;
+    var reference : DatabaseReference? = null;
+
     lateinit var recycler_view_chats : RecyclerView;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_message_chat)
+
+        val toolbar : Toolbar = findViewById(R.id.toolbar_message_chat);
+        setSupportActionBar(toolbar);
+
+        supportActionBar!!.title = "";
+        supportActionBar!!.setDisplayHomeAsUpEnabled(true);
+        toolbar.setNavigationOnClickListener {
+            val intent = Intent(this@MessageChatActivity, WelcomeActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+            finish()
+        }
 
         // Get visit user ID
         userIdVisit = intent.getStringExtra("visit_id")!!;
@@ -91,6 +103,8 @@ class MessageChatActivity : AppCompatActivity() {
             intent.type = "image/*";
             startActivityForResult(Intent.createChooser(intent,"Pick Image"), 438);
         }
+
+        seenMessage(userIdVisit);
     }
 
     // how to send message to user
@@ -223,5 +237,34 @@ class MessageChatActivity : AppCompatActivity() {
                 Toast.makeText(this@MessageChatActivity, error.message, Toast.LENGTH_SHORT).show();
             }
         })
+    }
+
+    var seenListener: ValueEventListener? = null;
+    private fun seenMessage(userId: String) {
+        reference = FirebaseDatabase.getInstance().reference.child("Chats");
+
+        seenListener = reference!!.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for (shot in snapshot.children) {
+                    val chat = shot.getValue(Chat::class.java);
+
+                    if (chat!!.getReceiver().equals(firebaseUser!!.uid) && chat!!.getSender().equals(userId)) {
+                        val hashMap = HashMap<String, Any>();
+                        hashMap["isSeen"] = true;
+                        shot.ref.updateChildren(hashMap);
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+
+            }
+        })
+    }
+
+    override fun onPause() {
+        super.onPause();
+
+        reference!!.removeEventListener(seenListener!!);
     }
 }

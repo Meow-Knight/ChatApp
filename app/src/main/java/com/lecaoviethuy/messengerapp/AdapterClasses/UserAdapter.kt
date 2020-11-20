@@ -78,6 +78,7 @@ class UserAdapter (mContext : Context,
             builder.setItems(options, DialogInterface.OnClickListener{ dialog, position ->
                 if (position == 0) {
                     val intent = Intent(mContext, MessageChatActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
                     intent.putExtra("visit_id", user.getUid());
                     mContext.startActivity(intent);
                 }
