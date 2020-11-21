@@ -90,7 +90,7 @@ class MessageChatActivity : AppCompatActivity() {
             if (message == "") {
                 Toast.makeText(this@MessageChatActivity, "Please write a message, please...", Toast.LENGTH_SHORT).show()
             } else {
-                sendMessageToUser(firebaseUser !! .uid, userIdVisit, message);
+                sendMessageToUser(firebaseUser!!.uid, userIdVisit, message);
             }
 
             text_message.setText("");

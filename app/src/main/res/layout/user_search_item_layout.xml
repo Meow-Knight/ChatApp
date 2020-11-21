@@ -17,7 +17,8 @@
         android:text="user name"
         android:layout_toRightOf="@+id/profile_image"
         android:layout_marginLeft="12dp"
-        android:textSize="19sp"></TextView>
+        android:textSize="19sp"
+        android:textStyle="bold"></TextView>
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/image_online"
         android:layout_width="18dp"
@@ -48,10 +49,10 @@
         android:layout_below="@+id/username"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="hi"
+        android:text="TODO sửa lại câu này"
         android:layout_toRightOf="@+id/profile_image"
-        android:layout_marginLeft="20dp"
-        android:padding="6dp"
+        android:layout_marginLeft="12dp"
+        android:paddingVertical="6dp"
         android:textSize="16sp"
         android:maxLines="1"
         android:textColor="@color/colorPrimaryDark"></TextView>
