@@ -2,7 +2,6 @@ package com.lecaoviethuy.messengerapp.fragments
 
 import android.app.Activity
 import android.app.AlertDialog
-import android.app.Dialog
 import android.app.ProgressDialog
 import android.content.DialogInterface
 import android.content.Intent
@@ -14,7 +13,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.Toast
-import com.google.android.gms.auth.api.signin.internal.Storage
 import com.google.android.gms.tasks.Continuation
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
@@ -66,19 +64,19 @@ class SettingsFragment : Fragment() {
                  if (p0.exists()){
                      val user : User? = p0.getValue(User::class.java)
                      if ((user!!.getUid()).equals(firebaseUser!!.uid)){
-                         view.username_setting.text = user!!.getUsername()
-                         Picasso.get().load(user!!.getProfile()).into(view.profile_image_setting)
-                         Picasso.get().load(user!!.getCover()).into(view.cover_image_setting)
+                         view.username_visit_user.text = user!!.getUsername()
+                         Picasso.get().load(user!!.getProfile()).into(view.profile_image_visit_user)
+                         Picasso.get().load(user!!.getCover()).into(view.cover_image_visit_user)
                      }
                  }
             }
         })
 
-        view.profile_image_setting.setOnClickListener{
+        view.profile_image_visit_user.setOnClickListener{
              pickImage()
         }
 
-        view.cover_image_setting.setOnClickListener{
+        view.cover_image_visit_user.setOnClickListener{
             coverChecker = "cover"
             pickImage()
         }

@@ -2,6 +2,7 @@ package com.lecaoviethuy.messengerapp
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
@@ -18,10 +19,14 @@ import com.lecaoviethuy.messengerapp.fragments.ChatsFragment
 import com.lecaoviethuy.messengerapp.fragments.SearchFragment
 import com.lecaoviethuy.messengerapp.fragments.SettingsFragment
 import com.lecaoviethuy.messengerapp.modelClasses.Chat
-import com.lecaoviethuy.messengerapp.modelClasses.Chatlist
 import com.lecaoviethuy.messengerapp.modelClasses.User
+import com.lecaoviethuy.messengerapp.controllers.AppController
+import com.lecaoviethuy.messengerapp.controllers.AppController.ValueChangeListener
+import com.lecaoviethuy.messengerapp.controllers.OnStopService
+import com.lecaoviethuy.messengerapp.modelClasses.Status
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_main.*
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,6 +37,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(findViewById(R.id.toolbar_main))
+
+        startService(Intent(this, OnStopService::class.java))
 
         mUser = FirebaseAuth.getInstance().currentUser
         refUser = FirebaseDatabase.getInstance().reference.child("Users").child(mUser!!.uid)
@@ -44,7 +51,7 @@ class MainActivity : AppCompatActivity() {
         val viewPage : ViewPager = findViewById(R.id.viewpager)
 
         val ref = FirebaseDatabase.getInstance().reference.child("Chats");
-        ref!!.addValueEventListener(object : ValueEventListener {
+        ref.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val viewPagerAdapter = ViewPagerAdapter(supportFragmentManager);
                 var countUnreadMessages = 0;
@@ -76,13 +83,13 @@ class MainActivity : AppCompatActivity() {
         })
 
         // load profile image
-        refUser!!.addValueEventListener(object : ValueEventListener{
+        refUser!!.addValueEventListener(object : ValueEventListener {
             override fun onCancelled(error: DatabaseError) {
             }
 
             override fun onDataChange(snapshot: DataSnapshot) {
-                if(snapshot.exists()){
-                    val user : User? = snapshot.getValue(User::class.java)
+                if (snapshot.exists()) {
+                    val user: User? = snapshot.getValue(User::class.java)
                     tv_username.text = user!!.getUsername()
                     Picasso.get()
                         .load(user.getProfile())
@@ -92,6 +99,11 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
+        AppController.instance!!.setOnVisibilityChangeListener(object : ValueChangeListener {
+            override fun onChanged(value: Boolean?) {
+                Log.d("isAppInBackground", value.toString())
+            }
+        })
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -135,7 +147,7 @@ class MainActivity : AppCompatActivity() {
             return fragments.size
         }
 
-        fun addFragment(fragment: Fragment, title : String){
+        fun addFragment(fragment: Fragment, title: String){
             fragments.add(fragment)
             titles.add(title)
         }
@@ -143,5 +155,10 @@ class MainActivity : AppCompatActivity() {
         override fun getPageTitle(position: Int): CharSequence? {
             return titles[position]
         }
+    }
+
+    override fun onResume() {
+        AppController.updateStatus(Status.ONLINE)
+        super.onResume()
     }
 }

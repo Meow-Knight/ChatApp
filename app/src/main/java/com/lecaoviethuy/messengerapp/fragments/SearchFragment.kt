@@ -61,7 +61,7 @@ class SearchFragment : Fragment() {
             }
 
             override fun onTextChanged(cs: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                searchForUser(cs.toString().toLowerCase(Locale.ROOT))
+                searchForUser(cs.toString().toLowerCase(Locale.ROOT), view.context)
             }
         })
 
@@ -92,7 +92,7 @@ class SearchFragment : Fragment() {
          })
     }
 
-    private fun searchForUser (str :String){
+    private fun searchForUser (str :String, context: Context){
         val firebaseUserID = FirebaseAuth.getInstance().currentUser!!.uid
         val queryUser = FirebaseDatabase.getInstance().reference.child("Users")
             .orderByChild("search")
@@ -112,7 +112,7 @@ class SearchFragment : Fragment() {
                         (mUsers as ArrayList<User>).add(user)
                     }
                 }
-                userAdapter = UserAdapter(context!!,mUsers!!, false)
+                userAdapter = UserAdapter(context , mUsers!!, false)
                 rvUsers!!.adapter = userAdapter
             }
         })
