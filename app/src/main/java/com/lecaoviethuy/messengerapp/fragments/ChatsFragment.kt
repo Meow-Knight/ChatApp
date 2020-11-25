@@ -12,7 +12,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
+import com.google.firebase.iid.FirebaseInstanceId
 import com.lecaoviethuy.messengerapp.AdapterClasses.UserAdapter
+import com.lecaoviethuy.messengerapp.Notifications.Token
 import com.lecaoviethuy.messengerapp.R
 import com.lecaoviethuy.messengerapp.modelClasses.Chatlist
 import com.lecaoviethuy.messengerapp.modelClasses.User
@@ -69,6 +71,15 @@ class ChatsFragment : Fragment() {
 
             }
         })
+
+        // update new token
+        updateToken(FirebaseInstanceId.getInstance().token)
+    }
+
+    private fun updateToken(token: String?) {
+        val ref = FirebaseDatabase.getInstance().reference.child("Tokens")
+        val token1 = Token(token!!)
+        ref.child(firebaseUser!!.uid).setValue(token1)
     }
 
     var userRetrieveListener : ValueEventListener? = null
