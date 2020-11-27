@@ -3,13 +3,30 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="10dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".fragments.SettingsFragment">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar_profile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/colorPrimaryDark"
+            app:popupTheme="@style/AppTheme.PopupOverlay">
+        </androidx.appcompat.widget.Toolbar>
+
+    </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cv1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/appbar"
         android:layout_marginTop="10dp">
 
         <RelativeLayout
@@ -51,7 +68,6 @@
         android:layout_below="@id/cv1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorProfile"
         android:layout_marginTop="40dp"
         android:orientation="horizontal"
         android:padding="6dp">
@@ -59,7 +75,7 @@
             android:id="@+id/set_facebook"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:src="@drawable/fb"
+            android:src="@drawable/fb_logo"
             android:scaleType="centerCrop"
             android:layout_marginTop="2dp"
             android:layout_marginEnd="35dp"
@@ -68,7 +84,7 @@
             android:id="@+id/set_instagram"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:src="@drawable/instagram"
+            android:src="@drawable/ins_logo"
             android:scaleType="centerCrop"
             android:layout_marginTop="2dp"
             android:layout_marginEnd="35dp"
@@ -77,21 +93,22 @@
             android:id="@+id/set_website"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:src="@drawable/website"
+            android:src="@drawable/web_logo"
             android:scaleType="centerCrop"
             android:layout_marginTop="2dp"
             android:layout_gravity="center"/>
     </LinearLayout>
 
     <Button
+        android:layout_centerHorizontal="true"
         android:id="@+id/bt_send_message"
-        android:layout_width="match_parent"
+        android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:layout_below="@id/container_links"
         android:text="Send message"
-        android:background="@color/colorProfile"
+        android:background="@android:color/black"
         android:textAllCaps="false"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="20dp"
         android:textColor="@android:color/white"
         />
 

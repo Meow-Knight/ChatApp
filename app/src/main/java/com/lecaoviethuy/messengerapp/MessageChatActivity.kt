@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,10 +19,11 @@ import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageTask
 import com.google.firebase.storage.UploadTask
-import com.lecaoviethuy.messengerapp.AdapterClasses.ChatsAdapter
+import com.lecaoviethuy.messengerapp.adapterClasses.ChatsAdapter
 import com.lecaoviethuy.messengerapp.Notifications.*
 import com.lecaoviethuy.messengerapp.fragments.APIService
 import com.lecaoviethuy.messengerapp.modelClasses.Chat
+import com.lecaoviethuy.messengerapp.modelClasses.MessageString
 import com.lecaoviethuy.messengerapp.modelClasses.User
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_message_chat.*
@@ -48,9 +50,6 @@ class MessageChatActivity : AppCompatActivity() {
         supportActionBar!!.title = ""
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         toolbar.setNavigationOnClickListener {
-            val intent = Intent(this@MessageChatActivity, WelcomeActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
-            startActivity(intent)
             finish()
         }
 
@@ -113,6 +112,12 @@ class MessageChatActivity : AppCompatActivity() {
             startActivityForResult(Intent.createChooser(intent,"Pick Image"), 438)
         }
 
+        container_info.setOnClickListener {
+            val intent = Intent(this, VisitUserProfileActivity::class.java)
+            intent.putExtra("visit_user_id", userIdVisit)
+            startActivity(intent)
+        }
+
         seenMessage(userIdVisit)
     }
 
@@ -137,34 +142,7 @@ class MessageChatActivity : AppCompatActivity() {
             .setValue(messageHashMap)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    val chatsListReference = FirebaseDatabase.getInstance()
-                        .reference
-                        .child("ChatList")
-                        .child(firebaseUser!!.uid)
-                        .child(userIdVisit)
-
-                    chatsListReference.addListenerForSingleValueEvent(object : ValueEventListener {
-                        override fun onDataChange(snapshot: DataSnapshot) {
-                            if (!snapshot.exists()) {
-                                chatsListReference.child("id").setValue(userIdVisit)
-                            }
-
-                            val chatsListReceiverRef = FirebaseDatabase.getInstance()
-                                .reference
-                                .child("ChatList")
-                                .child(userIdVisit)
-                                .child(firebaseUser!!.uid)
-
-                            chatsListReceiverRef.child("id").setValue(firebaseUser!!.uid)
-                        }
-
-                        override fun onCancelled(error: DatabaseError) {
-                            Toast.makeText(this@MessageChatActivity,"sent message error, try again...", Toast.LENGTH_SHORT).show()
-                        }
-                    })
-
-                    // change ID
-                    chatsListReference.child("id").setValue(firebaseUser!!.uid)
+                    updateChatList()
 
                     // implement the push notification using fcm
                     val userReference = FirebaseDatabase.getInstance().reference
@@ -187,6 +165,37 @@ class MessageChatActivity : AppCompatActivity() {
             }
     }
 
+    private fun updateChatList(){
+        val chatsListReference = FirebaseDatabase.getInstance()
+            .reference
+            .child("ChatList")
+            .child(firebaseUser!!.uid)
+            .child(userIdVisit)
+
+        chatsListReference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (!snapshot.exists()) {
+                    chatsListReference.child("id").setValue(userIdVisit)
+                }
+
+                val chatsListReceiverRef = FirebaseDatabase.getInstance()
+                    .reference
+                    .child("ChatList")
+                    .child(userIdVisit)
+                    .child(firebaseUser!!.uid)
+
+                chatsListReceiverRef.child("id").setValue(firebaseUser!!.uid)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(this@MessageChatActivity,"sent message error, try again...", Toast.LENGTH_SHORT).show()
+            }
+        })
+
+        // change ID
+        chatsListReference.child("id").setValue(firebaseUser!!.uid)
+    }
+
     private fun sendNotification(receiverId: String?, username: String?, message: String) {
         val ref = FirebaseDatabase.getInstance().reference.child("Tokens")
         val query = ref.orderByKey().equalTo(receiverId)
@@ -200,7 +209,7 @@ class MessageChatActivity : AppCompatActivity() {
                 for (snapshot in p0.children){
                     val  token : Token? = snapshot.getValue(Token::class.java)
                     val data = Data(firebaseUser!!.uid
-                        ,R.mipmap.ic_launcher
+                        ,R.mipmap.ic_icon_foreground
                         ,"$username: $message"
                         , "New Message"
                         ,userIdVisit)
@@ -258,12 +267,13 @@ class MessageChatActivity : AppCompatActivity() {
                 return@Continuation filePath.downloadUrl
             }).addOnCompleteListener {task ->
                 if (task.isSuccessful){
+                    updateChatList()
                     val downloadUri = task.result
                     val url = downloadUri.toString()
 
                     val messageHashMap = HashMap<String, Any?>()
                     messageHashMap["sender"] = firebaseUser!!.uid
-                    messageHashMap["message"] = "has sent you an image."
+                    messageHashMap["message"] = MessageString.RECEIVE_IMAGE.message
                     messageHashMap["receiver"] = userIdVisit
                     messageHashMap["isSeen"] = false
                     messageHashMap["url"] = url
@@ -284,7 +294,7 @@ class MessageChatActivity : AppCompatActivity() {
                                     override fun onDataChange(snapshot: DataSnapshot) {
                                         val user = snapshot.getValue(User::class.java)
                                         if (notify){
-                                            sendNotification(userIdVisit, user!!.getUsername(),"has sent you an image.")
+                                            sendNotification(userIdVisit, user!!.getUsername(), MessageString.RECEIVE_IMAGE.message)
                                         }
 
                                         notify = false

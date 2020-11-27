@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/white"
     tools:context=".fragments.SearchFragment">
 
    <EditText
@@ -10,11 +11,11 @@
        android:layout_width="match_parent"
        android:layout_height="wrap_content"
        android:layout_margin="6dp"
-       android:hint="Search users here..."></EditText>
+       android:hint="Search users here..."/>
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/searchList"
         android:layout_below="@+id/searchUser"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"></androidx.recyclerview.widget.RecyclerView>
+        android:layout_height="match_parent"/>
 
 </RelativeLayout>

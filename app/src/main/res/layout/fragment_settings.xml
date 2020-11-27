@@ -26,8 +26,7 @@
                android:layout_centerHorizontal="true"
                android:layout_marginTop="140dp"
                android:scaleType="centerCrop"
-               android:src="@drawable/avatar"
-               />
+               android:src="@drawable/avatar"/>
            <TextView
                android:id="@+id/username_visit_user"
                android:layout_width="wrap_content"
@@ -42,12 +41,12 @@
                android:layout_marginBottom="20dp"/>
        </RelativeLayout>
    </androidx.cardview.widget.CardView>
+
     <LinearLayout
         android:gravity="center"
         android:layout_below="@id/cv1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorProfile"
         android:layout_marginTop="40dp"
         android:orientation="horizontal"
         android:padding="6dp">
@@ -55,7 +54,7 @@
             android:id="@+id/set_facebook"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:src="@drawable/fb"
+            android:src="@drawable/fb_logo"
             android:scaleType="centerCrop"
             android:layout_marginTop="2dp"
             android:layout_marginEnd="35dp"
@@ -64,7 +63,7 @@
             android:id="@+id/set_instagram"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:src="@drawable/instagram"
+            android:src="@drawable/ins_logo"
             android:scaleType="centerCrop"
             android:layout_marginTop="2dp"
             android:layout_marginEnd="35dp"
@@ -73,7 +72,7 @@
             android:id="@+id/set_website"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:src="@drawable/website"
+            android:src="@drawable/web_logo"
             android:scaleType="centerCrop"
             android:layout_marginTop="2dp"
             android:layout_gravity="center"/>

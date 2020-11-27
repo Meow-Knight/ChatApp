@@ -13,25 +13,18 @@ import com.lecaoviethuy.messengerapp.modelClasses.Status
 
 
 class AppController : Application(), LifecycleObserver {
-    ///////////////////////////////////////////////
     @OnLifecycleEvent(Lifecycle.Event.ON_START)
     fun onEnterForeground() {
-        Log.d("AppController", "Foreground")
         updateStatus(Status.ONLINE)
         isAppInBackground(false)
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     fun onEnterBackground() {
-        Log.d("AppController", "Background")
         updateStatus(Status.OFFLINE)
         isAppInBackground(true)
     }
 
-
-
-    ///////////////////////////////////////////////
-    // Adding some callbacks for test and log
     interface ValueChangeListener {
         fun onChanged(value: Boolean?)
     }
@@ -51,7 +44,6 @@ class AppController : Application(), LifecycleObserver {
         super.onCreate()
         instance = this
 
-        // addObserver
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
     }
 

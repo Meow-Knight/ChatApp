@@ -17,13 +17,11 @@ class WelcomeActivity : AppCompatActivity() {
         bt_register_welcome.setOnClickListener {
             val intent = Intent(this@WelcomeActivity, RegisterActivity::class.java)
             startActivity(intent)
-            finish()
         }
 
         bt_login_welcome.setOnClickListener {
             val intent = Intent(this@WelcomeActivity, LoginActivity::class.java)
             startActivity(intent)
-            finish()
         }
     }
 

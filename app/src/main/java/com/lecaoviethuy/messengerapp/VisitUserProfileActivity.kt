@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.widget.Toolbar
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -19,6 +20,14 @@ class VisitUserProfileActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_visit_user_profile)
+
+        val toolbar : Toolbar = findViewById(R.id.toolbar_profile)
+        setSupportActionBar(toolbar)
+        supportActionBar!!.title = "User Profile"
+        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
+        toolbar.setNavigationOnClickListener {
+            finish()
+        }
 
         visitUserId = intent.getStringExtra("visit_user_id").toString()
         val ref = FirebaseDatabase.getInstance().reference.child("Users").child(visitUserId)

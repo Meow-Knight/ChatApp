@@ -16,7 +16,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.lecaoviethuy.messengerapp.AdapterClasses.UserAdapter
+import com.lecaoviethuy.messengerapp.adapterClasses.UserAdapter
 import com.lecaoviethuy.messengerapp.R
 import com.lecaoviethuy.messengerapp.modelClasses.User
 import java.util.*

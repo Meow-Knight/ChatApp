@@ -19,16 +19,6 @@ class RegisterActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
 
-        val toolbar : Toolbar = findViewById(R.id.toolbar_register)
-        setSupportActionBar(toolbar)
-        supportActionBar!!.title = "Register"
-        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-        toolbar.setNavigationOnClickListener {
-            val intent = Intent(this@RegisterActivity, WelcomeActivity::class.java)
-            startActivity(intent)
-            finish()
-        }
-
         mAuth = FirebaseAuth.getInstance()
         bt_register.setOnClickListener {
             register()
@@ -52,8 +42,8 @@ class RegisterActivity : AppCompatActivity() {
                         val userHashMap = HashMap<String, Any>()
                         userHashMap["uid"] = firebaseUserId
                         userHashMap["username"] = username
-                        userHashMap["profile"] = "https://firebasestorage.googleapis.com/v0/b/messengerapp-a751f.appspot.com/o/avatar%2Fdefault-user-image.png?alt=media&token=179982bf-5ad2-447d-a708-4af695e5dee0"
-                        userHashMap["cover"] = "https://firebasestorage.googleapis.com/v0/b/messengerapp-a751f.appspot.com/o/background%2Fpexels-daniel-pixelflow-376723.jpg?alt=media&token=4d2dccad-3dd9-412c-a6ad-2d88c43580be"
+                        userHashMap["profile"] = "https://firebasestorage.googleapis.com/v0/b/messengerapp-a751f.appspot.com/o/avatar-default.png?alt=media&token=4f109fb5-4185-4ff9-b443-9988c3b5e1cc"
+                        userHashMap["cover"] = "https://firebasestorage.googleapis.com/v0/b/messengerapp-a751f.appspot.com/o/cover-default.jpg?alt=media&token=da6f2e3e-4a88-4dee-9b0e-80deec628d22"
                         userHashMap["status"] = "offline"
                         userHashMap["search"] = username.toLowerCase()
                         userHashMap["facebook"] = "https://m.fb.com"

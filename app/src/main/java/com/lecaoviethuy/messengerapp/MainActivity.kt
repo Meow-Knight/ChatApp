@@ -22,7 +22,6 @@ import com.lecaoviethuy.messengerapp.modelClasses.Chat
 import com.lecaoviethuy.messengerapp.modelClasses.User
 import com.lecaoviethuy.messengerapp.controllers.AppController
 import com.lecaoviethuy.messengerapp.controllers.AppController.ValueChangeListener
-import com.lecaoviethuy.messengerapp.controllers.OnStopService
 import com.lecaoviethuy.messengerapp.modelClasses.Status
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_main.*
@@ -38,8 +37,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(findViewById(R.id.toolbar_main))
 
-        startService(Intent(this, OnStopService::class.java))
-
         mUser = FirebaseAuth.getInstance().currentUser
         refUser = FirebaseDatabase.getInstance().reference.child("Users").child(mUser!!.uid)
 
@@ -50,30 +47,30 @@ class MainActivity : AppCompatActivity() {
         val tabLayout : TabLayout = findViewById(R.id.tab_layout)
         val viewPage : ViewPager = findViewById(R.id.viewpager)
 
-        val ref = FirebaseDatabase.getInstance().reference.child("Chats");
+        val ref = FirebaseDatabase.getInstance().reference.child("Chats")
         ref.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val viewPagerAdapter = ViewPagerAdapter(supportFragmentManager);
-                var countUnreadMessages = 0;
+                val viewPagerAdapter = ViewPagerAdapter(supportFragmentManager)
+                var countUnreadMessages = 0
 
                 for (shot in snapshot.children) {
-                    val chat = shot.getValue(Chat::class.java);
+                    val chat = shot.getValue(Chat::class.java)
 
                     if (chat!!.getReceiver().equals(mUser!!.uid) && !chat.getIsSeen()) {
-                        ++countUnreadMessages;
+                        ++countUnreadMessages
                     }
                 }
 
                 if (countUnreadMessages == 0) {
                     viewPagerAdapter.addFragment(ChatsFragment(), "Chats")
                 } else {
-                    viewPagerAdapter.addFragment(ChatsFragment(), "(${countUnreadMessages}) Chats");
+                    viewPagerAdapter.addFragment(ChatsFragment(), "(${countUnreadMessages}) Chats")
                 }
 
-                viewPagerAdapter.addFragment(SearchFragment(), "Search");
-                viewPagerAdapter.addFragment(SettingsFragment(), "Settings");
+                viewPagerAdapter.addFragment(SearchFragment(), "Search")
+                viewPagerAdapter.addFragment(SettingsFragment(), "Settings")
 
-                viewPage.adapter = viewPagerAdapter;
+                viewPage.adapter = viewPagerAdapter
                 tabLayout.setupWithViewPager(viewPage)
             }
 
@@ -118,6 +115,7 @@ class MainActivity : AppCompatActivity() {
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
             R.id.action_logout -> {
+                AppController.updateStatus(Status.OFFLINE)
                 FirebaseAuth.getInstance().signOut()
                 val intent = Intent(this@MainActivity, WelcomeActivity::class.java)
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
