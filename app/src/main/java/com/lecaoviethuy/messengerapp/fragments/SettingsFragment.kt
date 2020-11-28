@@ -8,11 +8,8 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
-<<<<<<< HEAD
 import android.provider.MediaStore
-=======
 import android.util.Log
->>>>>>> a0a4c1e... Add delete your account feature
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,9 +20,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.tasks.Continuation
 import com.google.android.gms.tasks.Task
-import com.google.firebase.auth.AuthCredential
-import com.google.firebase.auth.EmailAuthProvider
-import com.google.firebase.auth.EmailAuthProvider.getCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
@@ -300,16 +294,12 @@ class SettingsFragment : Fragment() {
         val intent = Intent()
         intent.type = "image/*"
         intent.action = Intent.ACTION_GET_CONTENT
-<<<<<<< HEAD
         startActivityForResult(intent,GALLERY_CODE)
     }
 
     private fun pickImageFromCamera() {
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         startActivityForResult(intent,CAMERA_CODE)
-=======
-        startActivityForResult(intent, REQUEST_CODE)
->>>>>>> a0a4c1e... Add delete your account feature
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -317,7 +307,6 @@ class SettingsFragment : Fragment() {
         if (data != null) {
             if (requestCode == GALLERY_CODE && resultCode == Activity.RESULT_OK && data.data != null){
                 imageUri = data.data
-<<<<<<< HEAD
                 Toast.makeText(context,"uploading....", Toast.LENGTH_SHORT).show()
                 uploadFileImageToDatabase()
             }
@@ -325,10 +314,6 @@ class SettingsFragment : Fragment() {
                 val imageBitmap = data.extras!!.get("data") as Bitmap
                 Toast.makeText(context,"uploading....", Toast.LENGTH_SHORT).show()
                 uploadBitmapImageToDatabase(imageBitmap)
-=======
-                Toast.makeText(context, "uploading....", Toast.LENGTH_SHORT).show()
-                uploadImageToDatabase()
->>>>>>> a0a4c1e... Add delete your account feature
             }
         }
     }
@@ -383,21 +368,7 @@ class SettingsFragment : Fragment() {
                 if (task.isSuccessful){
                     val downloadUri = task.result
                     val url = downloadUri.toString()
-<<<<<<< HEAD
                     updateInfoUser(url)
-=======
-                    if (coverChecker == "cover"){
-                        val mapCoverImage = HashMap<String, Any>()
-                        mapCoverImage["cover"] = url
-                        userReference!!.updateChildren(mapCoverImage)
-                        coverChecker = ""
-                    } else {
-                        val mapProfileImg = HashMap<String, Any>()
-                        mapProfileImg["profile"] = url
-                        userReference!!.updateChildren(mapProfileImg)
-                        coverChecker = ""
-                    }
->>>>>>> a0a4c1e... Add delete your account feature
                     progressBar.dismiss()
                 }
             }

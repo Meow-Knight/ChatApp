@@ -18,12 +18,14 @@ import com.google.firebase.database.ValueEventListener
 import com.lecaoviethuy.messengerapp.MessageChatActivity
 import com.lecaoviethuy.messengerapp.R
 import com.lecaoviethuy.messengerapp.VisitUserProfileActivity
+import com.lecaoviethuy.messengerapp.databaseServices.OfflineDatabase
 import com.lecaoviethuy.messengerapp.modelClasses.Chat
 import com.lecaoviethuy.messengerapp.modelClasses.MessageString
 import com.lecaoviethuy.messengerapp.modelClasses.Status
 import com.lecaoviethuy.messengerapp.modelClasses.User
 import com.squareup.picasso.Picasso
 import de.hdodenhof.circleimageview.CircleImageView
+import kotlinx.android.synthetic.main.activity_main.*
 
 class UserAdapter (mContext : Context,
                     mUsers : List<User>,
@@ -33,11 +35,20 @@ class UserAdapter (mContext : Context,
     private var mContext : Context
     private var mUsers : List<User>
     private var isChatCheck: Boolean
+    private var isOnline: Boolean
 
     init {
         this.mUsers = mUsers
         this.isChatCheck = isChatCheck
         this.mContext = mContext
+
+        // Trigger offline
+        isOnline = false;
+        OfflineDatabase.triggerConnectionState(fun (isConnected:Boolean) {
+            isOnline = isConnected;
+
+            notifyDataSetChanged()
+        });
     }
     class ViewHolder (itemView : View) : RecyclerView.ViewHolder(itemView)
     {
@@ -46,6 +57,7 @@ class UserAdapter (mContext : Context,
         var onLineTxt : CircleImageView
         var offLineTxt : CircleImageView
         var lastMessageTxt : TextView
+
 
         init {
             userNameTxt = itemView.findViewById(R.id.username)
@@ -84,12 +96,18 @@ class UserAdapter (mContext : Context,
          */
         if(isChatCheck){
             retrieveLastMessage(user.getUid(), holder.lastMessageTxt)
-            if(user.getStatus() == Status.ONLINE.statusString){
-                holder.onLineTxt.visibility = View.VISIBLE
-                holder.offLineTxt.visibility = View.GONE
+
+            if (isOnline) {
+                if(user.getStatus() == Status.ONLINE.statusString){
+                    holder.onLineTxt.visibility = View.VISIBLE
+                    holder.offLineTxt.visibility = View.GONE
+                } else {
+                    holder.onLineTxt.visibility = View.GONE
+                    holder.offLineTxt.visibility = View.VISIBLE
+                }
             } else {
                 holder.onLineTxt.visibility = View.GONE
-                holder.offLineTxt.visibility = View.VISIBLE
+                holder.offLineTxt.visibility = View.GONE
             }
 
             holder.itemView.setOnClickListener {

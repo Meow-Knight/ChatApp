@@ -2,11 +2,6 @@ package com.lecaoviethuy.messengerapp.fragments
 
 import android.content.Context
 import android.os.Bundle
-<<<<<<< HEAD
-=======
-import android.util.Log
-import androidx.fragment.app.Fragment
->>>>>>> a0a4c1e... Add delete your account feature
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,7 +20,6 @@ import com.lecaoviethuy.messengerapp.modelClasses.Chatlist
 import com.lecaoviethuy.messengerapp.modelClasses.ItemChatlist
 import com.lecaoviethuy.messengerapp.modelClasses.User
 import com.lecaoviethuy.messengerapp.notifications.Token
-import kotlin.collections.ArrayList
 
 class ChatsFragment : Fragment() {
 

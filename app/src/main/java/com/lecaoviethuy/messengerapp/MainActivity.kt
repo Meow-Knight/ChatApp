@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
@@ -24,8 +25,9 @@ import com.lecaoviethuy.messengerapp.fragments.ChatsFragment
 import com.lecaoviethuy.messengerapp.fragments.SearchFragment
 import com.lecaoviethuy.messengerapp.fragments.SettingsFragment
 import com.lecaoviethuy.messengerapp.modelClasses.Chat
-import com.lecaoviethuy.messengerapp.modelClasses.Status
 import com.lecaoviethuy.messengerapp.modelClasses.User
+import com.lecaoviethuy.messengerapp.databaseServices.OfflineDatabase
+import com.lecaoviethuy.messengerapp.modelClasses.Status
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -100,6 +102,22 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
+
+        AppController.instance!!.setOnVisibilityChangeListener(object : ValueChangeListener {
+            override fun onChanged(value: Boolean?) {
+                Log.d("isAppInBackground", value.toString())
+            }
+        })
+
+        // Trigger offline
+        OfflineDatabase.triggerConnectionState(fun (isConnected:Boolean) {
+            if (isConnected) {
+                tv_status.visibility = View.GONE;
+            } else {
+                tv_status.setText(Status.OFFLINE.statusString)
+                tv_status.visibility = View.VISIBLE;
+            }
+        });
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
