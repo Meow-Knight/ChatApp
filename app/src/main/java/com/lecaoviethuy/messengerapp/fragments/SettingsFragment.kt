@@ -96,7 +96,48 @@ class SettingsFragment : Fragment() {
             setSocialLink()
         }
 
+        view.username_visit_user.setOnClickListener{
+            setName()
+        }
+
+
         return view
+    }
+
+    private fun setName() {
+        val builder : AlertDialog.Builder = AlertDialog.Builder(context,R.style.Theme_AppCompat_DayNight_Dialog_Alert)
+        val editText = EditText(context)
+        builder.setTitle("Change name")
+        builder.setView(editText)
+        builder.setPositiveButton("Change",DialogInterface.OnClickListener{
+                dialog, which ->
+            val name = editText.text.toString()
+
+            if (name == ""){
+                Toast.makeText(context,"Please write something...", Toast.LENGTH_SHORT).show()
+            } else {
+                saveName(name)
+            }
+        })
+        builder.setNegativeButton("Cancel",DialogInterface.OnClickListener{
+                dialog, which ->
+            dialog.cancel()
+        })
+
+        builder.show()
+
+    }
+
+    private fun saveName(name :String) {
+        val mapName = HashMap<String,Any>()
+        mapName["username"] = name
+        mapName["search"] = name.toString().toLowerCase()
+        userReference!!.updateChildren(mapName).addOnCompleteListener{
+                task ->
+            if (task.isSuccessful){
+                Toast.makeText(context,"Update successfully...", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun setSocialLink() {
