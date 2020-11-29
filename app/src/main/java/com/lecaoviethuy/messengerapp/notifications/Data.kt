@@ -1,4 +1,4 @@
-package com.lecaoviethuy.messengerapp.Notifications
+package com.lecaoviethuy.messengerapp.notifications
 
 class Data {
     private var user : String = ""

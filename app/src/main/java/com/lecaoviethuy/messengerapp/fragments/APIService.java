@@ -1,7 +1,7 @@
 package com.lecaoviethuy.messengerapp.fragments;
 
-import com.lecaoviethuy.messengerapp.Notifications.MyResponse;
-import com.lecaoviethuy.messengerapp.Notifications.Sender;
+import com.lecaoviethuy.messengerapp.notifications.MyResponse;
+import com.lecaoviethuy.messengerapp.notifications.Sender;
 
 import retrofit2.Call;
 import retrofit2.http.Body;

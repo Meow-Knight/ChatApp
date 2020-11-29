@@ -1,4 +1,4 @@
-package com.lecaoviethuy.messengerapp.Notifications
+package com.lecaoviethuy.messengerapp.notifications
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase

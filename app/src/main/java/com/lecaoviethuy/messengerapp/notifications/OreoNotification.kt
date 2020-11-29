@@ -1,4 +1,4 @@
-package com.lecaoviethuy.messengerapp.Notifications
+package com.lecaoviethuy.messengerapp.notifications
 
 import android.annotation.TargetApi
 import android.app.Notification

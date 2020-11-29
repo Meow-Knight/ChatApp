@@ -1,4 +1,4 @@
-package com.lecaoviethuy.messengerapp.Notifications
+package com.lecaoviethuy.messengerapp.notifications
 
 import android.annotation.SuppressLint
 import android.app.Notification

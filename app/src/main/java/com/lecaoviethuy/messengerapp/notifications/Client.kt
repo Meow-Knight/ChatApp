@@ -1,4 +1,4 @@
-package com.lecaoviethuy.messengerapp.Notifications
+package com.lecaoviethuy.messengerapp.notifications
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory

@@ -32,7 +32,7 @@
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar"/>
         <service
-            android:name=".Notifications.MyFirebaseMessaging"
+            android:name=".notifications.MyFirebaseMessaging"
             android:exported="true"
             android:enabled="true">
             <intent-filter>
@@ -40,7 +40,7 @@
             </intent-filter>
         </service>
         <service
-            android:name=".Notifications.MyFirebaseInstanceId"
+            android:name=".notifications.MyFirebaseInstanceId"
             android:exported="true"
             android:enabled="true">
             <intent-filter>

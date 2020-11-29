@@ -6,7 +6,6 @@ import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -20,7 +19,7 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageTask
 import com.google.firebase.storage.UploadTask
 import com.lecaoviethuy.messengerapp.adapterClasses.ChatsAdapter
-import com.lecaoviethuy.messengerapp.Notifications.*
+import com.lecaoviethuy.messengerapp.notifications.*
 import com.lecaoviethuy.messengerapp.fragments.APIService
 import com.lecaoviethuy.messengerapp.modelClasses.Chat
 import com.lecaoviethuy.messengerapp.modelClasses.MessageString

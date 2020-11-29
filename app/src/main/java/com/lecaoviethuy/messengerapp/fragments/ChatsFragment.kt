@@ -14,7 +14,7 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
 import com.google.firebase.iid.FirebaseInstanceId
 import com.lecaoviethuy.messengerapp.adapterClasses.UserAdapter
-import com.lecaoviethuy.messengerapp.Notifications.Token
+import com.lecaoviethuy.messengerapp.notifications.Token
 import com.lecaoviethuy.messengerapp.R
 import com.lecaoviethuy.messengerapp.modelClasses.Chatlist
 import com.lecaoviethuy.messengerapp.modelClasses.User
