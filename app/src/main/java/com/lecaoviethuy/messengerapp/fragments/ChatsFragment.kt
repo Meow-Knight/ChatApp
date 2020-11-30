@@ -2,22 +2,25 @@ package com.lecaoviethuy.messengerapp.fragments
 
 import android.content.Context
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
 import com.google.firebase.iid.FirebaseInstanceId
-import com.lecaoviethuy.messengerapp.adapterClasses.UserAdapter
-import com.lecaoviethuy.messengerapp.notifications.Token
 import com.lecaoviethuy.messengerapp.R
+import com.lecaoviethuy.messengerapp.adapterClasses.UserAdapter
+import com.lecaoviethuy.messengerapp.modelClasses.Chat
 import com.lecaoviethuy.messengerapp.modelClasses.Chatlist
+import com.lecaoviethuy.messengerapp.modelClasses.ItemChatlist
 import com.lecaoviethuy.messengerapp.modelClasses.User
+import com.lecaoviethuy.messengerapp.notifications.Token
+import kotlin.collections.ArrayList
 
 class ChatsFragment : Fragment() {
 
@@ -100,9 +103,38 @@ class ChatsFragment : Fragment() {
                         }
                     }
                 }
+                val ref = FirebaseDatabase.getInstance().reference.child("Chats")
+                ref.addValueEventListener(object : ValueEventListener{
+                    override fun onCancelled(error: DatabaseError) {
 
-                userAdapter = UserAdapter(context, (mUsers as ArrayList<User>), true)
-                recyclerViewChatlist.adapter = userAdapter
+                    }
+
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        val itemChatLists =  ArrayList<ItemChatlist>()
+                        var lastChat = Chat()
+                        for (user in mUsers as ArrayList<User>){
+                            for(dataSnapShot in snapshot.children){
+                                val chat : Chat? = dataSnapShot.getValue(Chat::class.java)
+                                if(firebaseUser != null && chat != null){
+                                    if((chat.getSender() == firebaseUser!!.uid && chat.getReceiver() == user.getUid())
+                                        || (chat.getSender() == user.getUid() && chat.getReceiver() == firebaseUser!!.uid)){
+                                         lastChat = chat
+                                    }
+                                }
+                            }
+                            itemChatLists.add(ItemChatlist(user,lastChat.getTime()))
+                        }
+                        // sorting chat list in chat fragment
+                        itemChatLists.sortWith(nullsLast(compareByDescending(ItemChatlist::getTimeLastMessage)))
+                        (mUsers as ArrayList<User>).clear()
+                        for (itemChatList in itemChatLists){
+                            itemChatList.getUser()?.let { (mUsers as ArrayList<User>).add(it) }
+                        }
+
+                        userAdapter = UserAdapter(context, (mUsers as ArrayList<User>), true)
+                        recyclerViewChatlist.adapter = userAdapter
+                    }
+                })
             }
 
             override fun onCancelled(error: DatabaseError) {

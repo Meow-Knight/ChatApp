@@ -134,6 +134,7 @@ class MessageChatActivity : AppCompatActivity() {
         messageHashMap["isSeen"] = false
         messageHashMap["url"] = ""
         messageHashMap["messageId"] = messageKey
+        messageHashMap["time"] = System.currentTimeMillis()
 
         // add new message
         reference.child("Chats")
