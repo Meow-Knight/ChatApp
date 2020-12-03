@@ -5,14 +5,16 @@ import android.app.AlertDialog
 import android.app.ProgressDialog
 import android.content.DialogInterface
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.Toast
+import androidx.fragment.app.Fragment
 import com.google.android.gms.tasks.Continuation
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
@@ -26,17 +28,14 @@ import com.lecaoviethuy.messengerapp.R
 import com.lecaoviethuy.messengerapp.modelClasses.User
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_settings.view.*
+import java.io.ByteArrayOutputStream
+import kotlin.collections.HashMap
 
-
-/**
- * A simple [Fragment] subclass.
- * Use the [SettingsFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class SettingsFragment : Fragment() {
     var userReference :DatabaseReference? = null
     var firebaseUser : FirebaseUser? = null
-    private val REQUEST_CODE = 438
+    private val GALLERY_CODE = 438
+    private val CAMERA_CODE = 123
     private var imageUri : Uri? = null
     private var storageRef : StorageReference?= null
     private var coverChecker : String? = ""
@@ -64,21 +63,21 @@ class SettingsFragment : Fragment() {
                  if (p0.exists()){
                      val user : User? = p0.getValue(User::class.java)
                      if ((user!!.getUid()).equals(firebaseUser!!.uid)){
-                         view.username_visit_user.text = user!!.getUsername()
-                         Picasso.get().load(user!!.getProfile()).into(view.profile_image_visit_user)
-                         Picasso.get().load(user!!.getCover()).into(view.cover_image_visit_user)
+                         view.username_visit_user.text = user.getUsername()
+                         Picasso.get().load(user.getProfile()).into(view.profile_image_visit_user)
+                         Picasso.get().load(user.getCover()).into(view.cover_image_visit_user)
                      }
                  }
             }
         })
 
         view.profile_image_visit_user.setOnClickListener{
-             pickImage()
+             pickImageFromLibrary()
         }
 
         view.cover_image_visit_user.setOnClickListener{
             coverChecker = "cover"
-            pickImage()
+            pickImageFromLibrary()
         }
 
         view.set_facebook.setOnClickListener{
@@ -100,6 +99,14 @@ class SettingsFragment : Fragment() {
             setName()
         }
 
+        view.set_cover_image_camera.setOnClickListener{
+            coverChecker = "cover"
+            pickImageFromCamera()
+        }
+
+        view.set_profile_image_camera.setOnClickListener{
+            pickImageFromCamera()
+        }
 
         return view
     }
@@ -200,32 +207,72 @@ class SettingsFragment : Fragment() {
         }
     }
 
-    private fun pickImage() {
+    private fun pickImageFromLibrary() {
         val intent = Intent()
         intent.type = "image/*"
         intent.action = Intent.ACTION_GET_CONTENT
-        startActivityForResult(intent,REQUEST_CODE)
+        startActivityForResult(intent,GALLERY_CODE)
+    }
+
+    private fun pickImageFromCamera() {
+        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        startActivityForResult(intent,CAMERA_CODE)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (data != null) {
-            if (requestCode == REQUEST_CODE && resultCode == Activity.RESULT_OK && data.data != null){
+            if (requestCode == GALLERY_CODE && resultCode == Activity.RESULT_OK && data.data != null){
                 imageUri = data.data
                 Toast.makeText(context,"uploading....", Toast.LENGTH_SHORT).show()
-                uploadImageToDatabase()
+                uploadFileImageToDatabase()
+            }
+            if (requestCode == CAMERA_CODE && resultCode == Activity.RESULT_OK){
+                val imageBitmap = data.extras!!.get("data") as Bitmap
+                Toast.makeText(context,"uploading....", Toast.LENGTH_SHORT).show()
+                uploadBitmapImageToDatabase(imageBitmap)
             }
         }
     }
 
-    private fun uploadImageToDatabase() {
+    private fun uploadBitmapImageToDatabase(imageBitmap: Bitmap) {
+        val progressBar = ProgressDialog(context)
+        progressBar.setMessage("image is uploading, please wait...")
+        progressBar.show()
+
+        val stream = ByteArrayOutputStream()
+        imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+        val fileRef = storageRef!!.child(System.currentTimeMillis().toString() + ".jpg")
+
+        val b = stream.toByteArray()
+
+        val uploadTask : StorageTask<*>
+        uploadTask = fileRef.putBytes(b)
+        uploadTask.continueWithTask(Continuation<UploadTask.TaskSnapshot,Task<Uri>> {task ->
+            if (task.isSuccessful){
+                task.exception?.let {
+                    throw  it
+                }
+            }
+            return@Continuation fileRef.downloadUrl
+        }).addOnCompleteListener{ task ->
+            if (task.isSuccessful){
+                val downloadUri = task.result
+                val url = downloadUri.toString()
+                updateInfoUser(url)
+                progressBar.dismiss()
+            }
+        }
+    }
+
+    private fun uploadFileImageToDatabase() {
         val progressBar = ProgressDialog(context)
         progressBar.setMessage("image is uploading, please wait...")
         progressBar.show()
 
         if (imageUri!= null){
             val fileRef = storageRef!!.child(System.currentTimeMillis().toString() + ".jpg")
-            var uploadTask : StorageTask<*>
+            val uploadTask : StorageTask<*>
             uploadTask = fileRef.putFile(imageUri!!)
             uploadTask.continueWithTask(Continuation <UploadTask.TaskSnapshot,Task<Uri>>{ task ->
                 if (task.isSuccessful){
@@ -238,20 +285,24 @@ class SettingsFragment : Fragment() {
                 if (task.isSuccessful){
                     val downloadUri = task.result
                     val url = downloadUri.toString()
-                    if (coverChecker == "cover"){
-                        val mapCoverImage = HashMap<String, Any>()
-                        mapCoverImage["cover"] = url
-                        userReference!!.updateChildren(mapCoverImage)
-                        coverChecker = ""
-                    } else {
-                        val mapProfileImg = HashMap<String,Any>()
-                        mapProfileImg["profile"] = url
-                        userReference!!.updateChildren(mapProfileImg)
-                        coverChecker = ""
-                    }
+                    updateInfoUser(url)
                     progressBar.dismiss()
                 }
             }
+        }
+    }
+
+    private fun updateInfoUser (url :String?){
+        if (coverChecker == "cover"){
+            val mapCoverImage = HashMap<String, Any?>()
+            mapCoverImage["cover"] = url
+            userReference!!.updateChildren(mapCoverImage)
+            coverChecker = ""
+        } else {
+            val mapProfileImg = HashMap<String,Any?>()
+            mapProfileImg["profile"] = url
+            userReference!!.updateChildren(mapProfileImg)
+            coverChecker = ""
         }
     }
 }

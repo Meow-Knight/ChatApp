@@ -19,6 +19,18 @@
                android:layout_width="match_parent"
                android:layout_height="200dp"
                android:scaleType="centerCrop"/>
+           <Button
+               android:id="@+id/set_cover_image_camera"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:text="@string/editing_cover_photo"
+               android:layout_below="@id/cover_image_visit_user"
+               android:layout_marginTop="-55dp"
+               android:layout_toEndOf="@id/cover_image_visit_user"
+               android:layout_marginStart="-105dp"
+               android:drawablePadding="2dp"
+               android:textSize="13sp"
+               android:drawableLeft="@drawable/ic_baseline_camera_alt_24"/>
            <de.hdodenhof.circleimageview.CircleImageView
                android:id="@+id/profile_image_visit_user"
                android:layout_width="150dp"
@@ -27,6 +39,16 @@
                android:layout_marginTop="140dp"
                android:scaleType="centerCrop"
                android:src="@drawable/avatar"/>
+           <ImageButton
+               android:id="@+id/set_profile_image_camera"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:layout_toEndOf="@id/profile_image_visit_user"
+               android:layout_below="@id/profile_image_visit_user"
+               android:background="@drawable/round_background"
+               android:layout_marginStart="-40dp"
+               android:layout_marginTop="-40dp"
+               android:src="@drawable/ic_baseline_camera_alt_24"/>
            <TextView
                android:id="@+id/username_visit_user"
                android:layout_width="wrap_content"
