@@ -27,8 +27,10 @@ import com.google.firebase.storage.UploadTask
 import com.lecaoviethuy.messengerapp.R
 import com.lecaoviethuy.messengerapp.modelClasses.User
 import com.squareup.picasso.Picasso
+import kotlinx.android.synthetic.main.fragment_settings.*
 import kotlinx.android.synthetic.main.fragment_settings.view.*
 import java.io.ByteArrayOutputStream
+import java.util.*
 import kotlin.collections.HashMap
 
 class SettingsFragment : Fragment() {
@@ -40,6 +42,8 @@ class SettingsFragment : Fragment() {
     private var storageRef : StorageReference?= null
     private var coverChecker : String? = ""
     private var socialChecker : String?= ""
+    private var mView : View? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -71,44 +75,64 @@ class SettingsFragment : Fragment() {
             }
         })
 
-        view.profile_image_visit_user.setOnClickListener{
-             pickImageFromLibrary()
+        if(firebaseUser!!.isEmailVerified){
+            view.bt_verify_email.visibility = View.GONE
         }
 
-        view.cover_image_visit_user.setOnClickListener{
+        return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        mView = view
+        initEvents()
+        super.onViewCreated(view, savedInstanceState)
+    }
+
+    private fun initEvents() {
+        profile_image_visit_user.setOnClickListener{
+            pickImageFromLibrary()
+        }
+
+        cover_image_visit_user.setOnClickListener{
             coverChecker = "cover"
             pickImageFromLibrary()
         }
 
-        view.set_facebook.setOnClickListener{
+        set_facebook.setOnClickListener{
             socialChecker = "facebook"
             setSocialLink()
         }
 
-        view.set_instagram.setOnClickListener{
+        set_instagram.setOnClickListener{
             socialChecker = "instagram"
             setSocialLink()
         }
 
-        view.set_website.setOnClickListener{
+        set_website.setOnClickListener{
             socialChecker = "website"
             setSocialLink()
         }
 
-        view.username_visit_user.setOnClickListener{
+        username_visit_user.setOnClickListener{
             setName()
         }
 
-        view.set_cover_image_camera.setOnClickListener{
+        set_cover_image_camera.setOnClickListener{
             coverChecker = "cover"
             pickImageFromCamera()
         }
 
-        view.set_profile_image_camera.setOnClickListener{
+        set_profile_image_camera.setOnClickListener{
             pickImageFromCamera()
         }
 
-        return view
+        bt_verify_email.setOnClickListener {
+            firebaseUser!!.sendEmailVerification().addOnSuccessListener {
+                Toast.makeText(mView!!.context, "Sent verify email, check your email", Toast.LENGTH_LONG).show()
+            }.addOnFailureListener {
+                Toast.makeText(mView!!.context, "Cannot sent verify email", Toast.LENGTH_LONG).show()
+            }
+        }
     }
 
     private fun setName() {
@@ -116,8 +140,8 @@ class SettingsFragment : Fragment() {
         val editText = EditText(context)
         builder.setTitle("Change name")
         builder.setView(editText)
-        builder.setPositiveButton("Change",DialogInterface.OnClickListener{
-                dialog, which ->
+        builder.setPositiveButton("Change", DialogInterface.OnClickListener{
+                _, _ ->
             val name = editText.text.toString()
 
             if (name == ""){
@@ -127,7 +151,7 @@ class SettingsFragment : Fragment() {
             }
         })
         builder.setNegativeButton("Cancel",DialogInterface.OnClickListener{
-                dialog, which ->
+                dialog, _ ->
             dialog.cancel()
         })
 
@@ -138,7 +162,7 @@ class SettingsFragment : Fragment() {
     private fun saveName(name :String) {
         val mapName = HashMap<String,Any>()
         mapName["username"] = name
-        mapName["search"] = name.toString().toLowerCase()
+        mapName["search"] = name.toLowerCase(Locale.ROOT)
         userReference!!.updateChildren(mapName).addOnCompleteListener{
                 task ->
             if (task.isSuccessful){
@@ -164,20 +188,19 @@ class SettingsFragment : Fragment() {
         }
 
         builder.setView(editText)
-        builder.setPositiveButton("create",DialogInterface.OnClickListener{
-            dialog, which ->
+        builder.setPositiveButton("create") { _, _ ->
             val str = editText.text.toString()
 
-            if (str == ""){
-                Toast.makeText(context,"Please write something...", Toast.LENGTH_SHORT).show()
+            if (str == "") {
+                Toast.makeText(context, "Please write something...", Toast.LENGTH_SHORT).show()
             } else {
                 saveSocialLink(str)
             }
-        })
-        builder.setNegativeButton("Cancel",DialogInterface.OnClickListener{
-                dialog, which ->
+        }
+
+        builder.setNegativeButton("Cancel") { dialog, _ ->
             dialog.cancel()
-        })
+        }
 
         builder.show()
     }

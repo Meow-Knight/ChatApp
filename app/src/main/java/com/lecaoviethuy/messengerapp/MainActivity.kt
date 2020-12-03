@@ -11,18 +11,20 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.material.tabs.TabLayout
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
+import com.lecaoviethuy.messengerapp.controllers.AppController
+import com.lecaoviethuy.messengerapp.controllers.AppController.ValueChangeListener
 import com.lecaoviethuy.messengerapp.fragments.ChatsFragment
 import com.lecaoviethuy.messengerapp.fragments.SearchFragment
 import com.lecaoviethuy.messengerapp.fragments.SettingsFragment
 import com.lecaoviethuy.messengerapp.modelClasses.Chat
-import com.lecaoviethuy.messengerapp.modelClasses.User
-import com.lecaoviethuy.messengerapp.controllers.AppController
-import com.lecaoviethuy.messengerapp.controllers.AppController.ValueChangeListener
 import com.lecaoviethuy.messengerapp.modelClasses.Status
+import com.lecaoviethuy.messengerapp.modelClasses.User
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -36,6 +38,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(findViewById(R.id.toolbar_main))
+
+        Log.d("check_create_main", "null user")
 
         mUser = FirebaseAuth.getInstance().currentUser
         refUser = FirebaseDatabase.getInstance().reference.child("Users").child(mUser!!.uid)
@@ -117,6 +121,13 @@ class MainActivity : AppCompatActivity() {
             R.id.action_logout -> {
                 AppController.updateStatus(Status.OFFLINE)
                 FirebaseAuth.getInstance().signOut()
+                val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestIdToken(getString(R.string.default_web_client_id))
+                    .requestEmail()
+                    .build()
+
+                val mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
+                mGoogleSignInClient.signOut()
                 val intent = Intent(this@MainActivity, WelcomeActivity::class.java)
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
                 startActivity(intent)

@@ -50,10 +50,12 @@ dependencies {
 
     // firebase dependency
     implementation 'com.google.firebase:firebase-core:18.0.0'
-    implementation 'com.google.firebase:firebase-auth:20.0.0'
+    implementation 'com.google.firebase:firebase-auth:20.0.1'
     implementation 'com.google.firebase:firebase-storage-ktx:19.2.0'
     implementation 'com.google.firebase:firebase-database-ktx:19.5.1'
     implementation 'com.google.firebase:firebase-messaging:21.0.0'
+
+    implementation 'com.google.android.gms:play-services-auth:19.0.0'
 
     // for other
     implementation 'de.hdodenhof:circleimageview:2.2.0'
