@@ -19,6 +19,7 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
 import com.lecaoviethuy.messengerapp.controllers.AppController
 import com.lecaoviethuy.messengerapp.controllers.AppController.ValueChangeListener
+import com.lecaoviethuy.messengerapp.controllers.DatabaseController
 import com.lecaoviethuy.messengerapp.fragments.ChatsFragment
 import com.lecaoviethuy.messengerapp.fragments.SearchFragment
 import com.lecaoviethuy.messengerapp.fragments.SettingsFragment
@@ -32,18 +33,14 @@ import kotlinx.android.synthetic.main.activity_main.*
 class MainActivity : AppCompatActivity() {
 
     private var mUser : FirebaseUser? = null
-    private var refUser : DatabaseReference?= null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(findViewById(R.id.toolbar_main))
 
-        Log.d("check_create_main", "null user")
-
         mUser = FirebaseAuth.getInstance().currentUser
         refUser = FirebaseDatabase.getInstance().reference.child("Users").child(mUser!!.uid)
-
 
         val toolbar : Toolbar = findViewById(R.id.toolbar_main)
         setSupportActionBar(toolbar)
@@ -51,31 +48,33 @@ class MainActivity : AppCompatActivity() {
         val tabLayout : TabLayout = findViewById(R.id.tab_layout)
         val viewPage : ViewPager = findViewById(R.id.viewpager)
 
-        val ref = FirebaseDatabase.getInstance().reference.child("Chats")
-        ref.addValueEventListener(object : ValueEventListener {
+        ref = FirebaseDatabase.getInstance().reference.child("Chats")
+        unreadCountListener = ref!!.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val viewPagerAdapter = ViewPagerAdapter(supportFragmentManager)
-                var countUnreadMessages = 0
+                if(!DatabaseController.isDeleting){
+                    val viewPagerAdapter = ViewPagerAdapter(supportFragmentManager)
+                    var countUnreadMessages = 0
 
-                for (shot in snapshot.children) {
-                    val chat = shot.getValue(Chat::class.java)
+                    for (shot in snapshot.children) {
+                        val chat = shot.getValue(Chat::class.java)
 
-                    if (chat!!.getReceiver().equals(mUser!!.uid) && !chat.getIsSeen()) {
-                        ++countUnreadMessages
+                        if (chat!!.getReceiver().equals(mUser!!.uid) && !chat.getIsSeen()) {
+                            ++countUnreadMessages
+                        }
                     }
+
+                    if (countUnreadMessages == 0) {
+                        viewPagerAdapter.addFragment(ChatsFragment(), "Chats")
+                    } else {
+                        viewPagerAdapter.addFragment(ChatsFragment(), "(${countUnreadMessages}) Chats")
+                    }
+
+                    viewPagerAdapter.addFragment(SearchFragment(), "Search")
+                    viewPagerAdapter.addFragment(SettingsFragment(), "Settings")
+
+                    viewPage.adapter = viewPagerAdapter
+                    tabLayout.setupWithViewPager(viewPage)
                 }
-
-                if (countUnreadMessages == 0) {
-                    viewPagerAdapter.addFragment(ChatsFragment(), "Chats")
-                } else {
-                    viewPagerAdapter.addFragment(ChatsFragment(), "(${countUnreadMessages}) Chats")
-                }
-
-                viewPagerAdapter.addFragment(SearchFragment(), "Search")
-                viewPagerAdapter.addFragment(SettingsFragment(), "Settings")
-
-                viewPage.adapter = viewPagerAdapter
-                tabLayout.setupWithViewPager(viewPage)
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -84,25 +83,21 @@ class MainActivity : AppCompatActivity() {
         })
 
         // load profile image
-        refUser!!.addValueEventListener(object : ValueEventListener {
+        loadProfileListener = refUser!!.addValueEventListener(object : ValueEventListener {
             override fun onCancelled(error: DatabaseError) {
             }
 
             override fun onDataChange(snapshot: DataSnapshot) {
-                if (snapshot.exists()) {
-                    val user: User? = snapshot.getValue(User::class.java)
-                    tv_username.text = user!!.getUsername()
-                    Picasso.get()
-                        .load(user.getProfile())
-                        .placeholder(R.drawable.avatar)
-                        .into(iv_avatar)
+                if(!DatabaseController.isDeleting){
+                    if (snapshot.exists()) {
+                        val user: User? = snapshot.getValue(User::class.java)
+                        tv_username.text = user!!.getUsername()
+                        Picasso.get()
+                            .load(user.getProfile())
+                            .placeholder(R.drawable.avatar)
+                            .into(iv_avatar)
+                    }
                 }
-            }
-        })
-
-        AppController.instance!!.setOnVisibilityChangeListener(object : ValueChangeListener {
-            override fun onChanged(value: Boolean?) {
-                Log.d("isAppInBackground", value.toString())
             }
         })
     }
@@ -169,5 +164,22 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         AppController.updateStatus(Status.ONLINE)
         super.onResume()
+    }
+
+    companion object{
+        var ref : DatabaseReference? = null
+        var refUser : DatabaseReference?= null
+        var unreadCountListener : ValueEventListener? = null
+        var loadProfileListener : ValueEventListener? = null
+
+        fun clearAllListener(){
+            if(ref != null && unreadCountListener != null){
+                ref!!.removeEventListener(unreadCountListener!!)
+            }
+
+            if(refUser != null && loadProfileListener != null){
+                refUser!!.removeEventListener(loadProfileListener!!)
+            }
+        }
     }
 }

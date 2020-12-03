@@ -8,15 +8,24 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+<<<<<<< HEAD
 import android.provider.MediaStore
+=======
+import android.util.Log
+>>>>>>> a0a4c1e... Add delete your account feature
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.tasks.Continuation
 import com.google.android.gms.tasks.Task
+import com.google.firebase.auth.AuthCredential
+import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.EmailAuthProvider.getCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
@@ -24,7 +33,10 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.StorageTask
 import com.google.firebase.storage.UploadTask
+import com.lecaoviethuy.messengerapp.MainActivity
 import com.lecaoviethuy.messengerapp.R
+import com.lecaoviethuy.messengerapp.WelcomeActivity
+import com.lecaoviethuy.messengerapp.controllers.DatabaseController
 import com.lecaoviethuy.messengerapp.modelClasses.User
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_settings.*
@@ -58,20 +70,20 @@ class SettingsFragment : Fragment() {
         firebaseUser = FirebaseAuth.getInstance().currentUser
         userReference = FirebaseDatabase.getInstance().reference.child("Users").child(firebaseUser!!.uid)
         storageRef = FirebaseStorage.getInstance().reference.child("User Images")
-        userReference!!.addValueEventListener(object : ValueEventListener{
+        userReference!!.addValueEventListener(object : ValueEventListener {
             override fun onCancelled(error: DatabaseError) {
 
             }
 
             override fun onDataChange(p0: DataSnapshot) {
-                 if (p0.exists()){
-                     val user : User? = p0.getValue(User::class.java)
-                     if ((user!!.getUid()).equals(firebaseUser!!.uid)){
-                         view.username_visit_user.text = user.getUsername()
-                         Picasso.get().load(user.getProfile()).into(view.profile_image_visit_user)
-                         Picasso.get().load(user.getCover()).into(view.cover_image_visit_user)
-                     }
-                 }
+                if (p0.exists()) {
+                    val user: User? = p0.getValue(User::class.java)
+                    if ((user!!.getUid()).equals(firebaseUser!!.uid)) {
+                        view.username_visit_user.text = user.getUsername()
+                        Picasso.get().load(user.getProfile()).into(view.profile_image_visit_user)
+                        Picasso.get().load(user.getCover()).into(view.cover_image_visit_user)
+                    }
+                }
             }
         })
 
@@ -133,6 +145,58 @@ class SettingsFragment : Fragment() {
                 Toast.makeText(mView!!.context, "Cannot sent verify email", Toast.LENGTH_LONG).show()
             }
         }
+
+        /*
+        * When you click on yes delete button
+        * Database Controller will handle delete your account information in realtime database
+        * set DatabaseController#isDeleting = true and false when everything deleted
+        * this make sure addValueEventListener of firebase database cannot run by the way check if isDeleting in the first line
+        * of onDataChange function, if not check => app will not work in right way, can crash app
+        * it cannot delete your profile and cover image
+        * delete user on authentication and after that sign out google client and log out user
+        * finally, back to welcome activity
+        * */
+        bt_delete_account.setOnClickListener {
+            val deleteDialog = AlertDialog.Builder(mView!!.context)
+            deleteDialog.setTitle("Delete your account?")
+                .setMessage("Everything about your account will be deleted")
+                .setPositiveButton(
+                    "YES"
+                ) { dialog, _ ->
+                    ChatsFragment.clearAllListener()
+                    MainActivity.clearAllListener()
+                    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .requestIdToken(getString(R.string.default_web_client_id))
+                        .requestEmail()
+                        .build()
+
+                    val mGoogleSignInClient = GoogleSignIn.getClient(mView!!.context, gso)
+                    mGoogleSignInClient.signOut()
+                    val user = FirebaseAuth.getInstance().currentUser
+                    DatabaseController.deleteAll(user!!.uid) // this line can move on top but now i'm tired
+                    user!!.delete().addOnCompleteListener {
+                        Toast.makeText(
+                            mView!!.context,
+                            "Deleted your account",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        // log out
+                        FirebaseAuth.getInstance().signOut()
+
+                        val intent = Intent(mView!!.context, WelcomeActivity::class.java)
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
+                        mView!!.context.applicationContext.startActivity(intent)
+
+                        dialog.dismiss()
+                    }.addOnFailureListener {
+                        Log.d("check", "failed delete account")
+                    }
+                }
+                .setNegativeButton(
+                    "NO"
+                ) { dialog, _ -> dialog.dismiss() }
+            deleteDialog.create().show()
+        }
     }
 
     private fun setName() {
@@ -172,7 +236,10 @@ class SettingsFragment : Fragment() {
     }
 
     private fun setSocialLink() {
-        val builder : AlertDialog.Builder = AlertDialog.Builder(context,R.style.Theme_AppCompat_DayNight_Dialog_Alert)
+        val builder : AlertDialog.Builder = AlertDialog.Builder(
+            context,
+            R.style.Theme_AppCompat_DayNight_Dialog_Alert
+        )
         if (socialChecker == "website"){
             builder.setTitle("Write URL:")
         } else {
@@ -206,10 +273,10 @@ class SettingsFragment : Fragment() {
     }
 
     private fun saveSocialLink(str: String) {
-        val mapSocial = HashMap<String,Any>()
+        val mapSocial = HashMap<String, Any>()
 
         when (socialChecker){
-            "facebook" ->{
+            "facebook" -> {
                 mapSocial["facebook"] = "https://m.facebook.com/$str"
             }
 
@@ -222,10 +289,9 @@ class SettingsFragment : Fragment() {
             }
         }
 
-        userReference!!.updateChildren(mapSocial).addOnCompleteListener{
-            task ->
+        userReference!!.updateChildren(mapSocial).addOnCompleteListener{ task ->
             if (task.isSuccessful){
-                Toast.makeText(context,"Update successfully...", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Update successfully...", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -234,12 +300,16 @@ class SettingsFragment : Fragment() {
         val intent = Intent()
         intent.type = "image/*"
         intent.action = Intent.ACTION_GET_CONTENT
+<<<<<<< HEAD
         startActivityForResult(intent,GALLERY_CODE)
     }
 
     private fun pickImageFromCamera() {
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         startActivityForResult(intent,CAMERA_CODE)
+=======
+        startActivityForResult(intent, REQUEST_CODE)
+>>>>>>> a0a4c1e... Add delete your account feature
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -247,6 +317,7 @@ class SettingsFragment : Fragment() {
         if (data != null) {
             if (requestCode == GALLERY_CODE && resultCode == Activity.RESULT_OK && data.data != null){
                 imageUri = data.data
+<<<<<<< HEAD
                 Toast.makeText(context,"uploading....", Toast.LENGTH_SHORT).show()
                 uploadFileImageToDatabase()
             }
@@ -254,6 +325,10 @@ class SettingsFragment : Fragment() {
                 val imageBitmap = data.extras!!.get("data") as Bitmap
                 Toast.makeText(context,"uploading....", Toast.LENGTH_SHORT).show()
                 uploadBitmapImageToDatabase(imageBitmap)
+=======
+                Toast.makeText(context, "uploading....", Toast.LENGTH_SHORT).show()
+                uploadImageToDatabase()
+>>>>>>> a0a4c1e... Add delete your account feature
             }
         }
     }
@@ -297,8 +372,8 @@ class SettingsFragment : Fragment() {
             val fileRef = storageRef!!.child(System.currentTimeMillis().toString() + ".jpg")
             val uploadTask : StorageTask<*>
             uploadTask = fileRef.putFile(imageUri!!)
-            uploadTask.continueWithTask(Continuation <UploadTask.TaskSnapshot,Task<Uri>>{ task ->
-                if (task.isSuccessful){
+            uploadTask.continueWithTask(Continuation<UploadTask.TaskSnapshot, Task<Uri>> { task ->
+                if (task.isSuccessful) {
                     task.exception?.let {
                         throw  it
                     }
@@ -308,7 +383,21 @@ class SettingsFragment : Fragment() {
                 if (task.isSuccessful){
                     val downloadUri = task.result
                     val url = downloadUri.toString()
+<<<<<<< HEAD
                     updateInfoUser(url)
+=======
+                    if (coverChecker == "cover"){
+                        val mapCoverImage = HashMap<String, Any>()
+                        mapCoverImage["cover"] = url
+                        userReference!!.updateChildren(mapCoverImage)
+                        coverChecker = ""
+                    } else {
+                        val mapProfileImg = HashMap<String, Any>()
+                        mapProfileImg["profile"] = url
+                        userReference!!.updateChildren(mapProfileImg)
+                        coverChecker = ""
+                    }
+>>>>>>> a0a4c1e... Add delete your account feature
                     progressBar.dismiss()
                 }
             }

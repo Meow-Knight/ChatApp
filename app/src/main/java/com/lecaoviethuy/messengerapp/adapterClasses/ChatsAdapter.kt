@@ -3,6 +3,7 @@ package com.lecaoviethuy.messengerapp.adapterClasses
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,6 +17,7 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.FirebaseDatabase
 import com.lecaoviethuy.messengerapp.R
 import com.lecaoviethuy.messengerapp.ViewFullImageActivity
+import com.lecaoviethuy.messengerapp.controllers.StorageController
 import com.lecaoviethuy.messengerapp.modelClasses.Chat
 import com.squareup.picasso.Picasso
 import de.hdodenhof.circleimageview.CircleImageView
@@ -30,12 +32,14 @@ class ChatsAdapter (
     private val mChatList: List<Chat>
     private val imageUrl: String
 
-    var firebaseUser: FirebaseUser? = FirebaseAuth.getInstance().currentUser!!
+    var firebaseUser: FirebaseUser? = null
 
     init {
+        Log.d("check_activity", "on constructor chat adapter")
         this.mChatList = mChatList
         this.mContext = mContext
         this.imageUrl = imageUrl
+        this.firebaseUser = FirebaseAuth.getInstance().currentUser!!
     }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -96,7 +100,9 @@ class ChatsAdapter (
                     builder.setTitle("What do you want?")
                     builder.setItems(options) { _, i ->
                         when(i){
-                            0 -> deleteSentMessage(position, holder)
+                            0 -> {
+                                deleteSentMessage(position, holder)
+                            }
                         }
                     }
                     builder.show()

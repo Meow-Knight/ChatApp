@@ -2,6 +2,11 @@ package com.lecaoviethuy.messengerapp.fragments
 
 import android.content.Context
 import android.os.Bundle
+<<<<<<< HEAD
+=======
+import android.util.Log
+import androidx.fragment.app.Fragment
+>>>>>>> a0a4c1e... Add delete your account feature
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -28,8 +33,6 @@ class ChatsFragment : Fragment() {
     private var mUsers : List<User>? = null
     private var usersChatList : List<Chatlist>? = null
     private var firebaseUser : FirebaseUser? = null
-    private var userReference : DatabaseReference? = null
-    private var chatListReference : DatabaseReference? = null
 
     lateinit var recyclerViewChatlist : RecyclerView
 
@@ -37,7 +40,6 @@ class ChatsFragment : Fragment() {
         super.onCreate(savedInstanceState)
     }
 
-    var chatListRetrieveListener : ValueEventListener? = null
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -56,7 +58,13 @@ class ChatsFragment : Fragment() {
 
         usersChatList = ArrayList()
 
-        chatListReference = FirebaseDatabase.getInstance().reference.child("ChatList").child(firebaseUser!!.uid)
+        chatListReference = FirebaseDatabase
+                            .getInstance()
+                            .reference
+                            .child("ChatList")
+                            .child(FirebaseAuth
+                                .getInstance()
+                                .currentUser!!.uid)
         chatListRetrieveListener = chatListReference!!.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 (usersChatList as ArrayList).clear()
@@ -85,7 +93,6 @@ class ChatsFragment : Fragment() {
         ref.child(firebaseUser!!.uid).setValue(token1)
     }
 
-    var userRetrieveListener : ValueEventListener? = null
     private fun retrieveChatList(context: Context) {
         mUsers = ArrayList()
 
@@ -148,5 +155,22 @@ class ChatsFragment : Fragment() {
 
         chatListReference!!.removeEventListener(chatListRetrieveListener!!)
         userReference!!.removeEventListener(userRetrieveListener!!)
+    }
+
+    companion object{
+        var chatListReference : DatabaseReference? = null
+        var userReference : DatabaseReference? = null
+        var userRetrieveListener : ValueEventListener? = null
+        var chatListRetrieveListener : ValueEventListener? = null
+
+        fun clearAllListener(){
+            if (chatListReference != null && chatListRetrieveListener != null){
+                chatListReference!!.removeEventListener(chatListRetrieveListener!!)
+            }
+
+            if (userReference != null && userRetrieveListener != null){
+                userReference!!.removeEventListener(userRetrieveListener!!)
+            }
+        }
     }
 }

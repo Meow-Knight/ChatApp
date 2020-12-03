@@ -15,6 +15,7 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.*
 import com.google.firebase.database.*
+import com.lecaoviethuy.messengerapp.controllers.DatabaseController
 import com.lecaoviethuy.messengerapp.modelClasses.User
 import kotlinx.android.synthetic.main.activity_welcome.*
 
@@ -22,6 +23,9 @@ class WelcomeActivity : AppCompatActivity() {
     private var mUser : FirebaseUser? = null
     private var mFirebaseAuth: FirebaseAuth? = null
     private var mGoogleSignInClient: GoogleSignInClient? = null
+    private var refUser : DatabaseReference? = null
+
+    private var loginWithGoogleListener : ValueEventListener? = null
 
     // final variables
     private val RC_SIGN_IN = 123
@@ -98,10 +102,10 @@ class WelcomeActivity : AppCompatActivity() {
                 if (task.isSuccessful) {
                     // check if email already exist (logged with email-password)
                     val mUserId = mUser!!.uid
-                    val refUser = FirebaseDatabase.getInstance().reference.child("Users")
+                    refUser = FirebaseDatabase.getInstance().reference.child("Users")
                         .child(mUserId)
 
-                    refUser.addValueEventListener(object :ValueEventListener{
+                    loginWithGoogleListener = refUser!!.addValueEventListener(object :ValueEventListener{
                         override fun onDataChange(snapshot: DataSnapshot) {
                             if (isCheckedExistUser){
                                 return
@@ -109,7 +113,7 @@ class WelcomeActivity : AppCompatActivity() {
 
                             val user = snapshot.getValue(User::class.java)
                             if (user == null){
-                                createNewChild(refUser)
+                                createNewChild(refUser!!)
                             } else {
                                 val intent = Intent(this@WelcomeActivity, MainActivity::class.java)
                                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -157,6 +161,13 @@ class WelcomeActivity : AppCompatActivity() {
     private fun signIn() {
         val signInIntent: Intent = mGoogleSignInClient!!.signInIntent
         startActivityForResult(signInIntent, RC_SIGN_IN)
+    }
+
+    override fun onPause() {
+        if(refUser != null){
+            refUser!!.removeEventListener(loginWithGoogleListener!!)
+        }
+        super.onPause()
     }
 
     companion object{

@@ -106,4 +106,9 @@ class User {
     fun getWebsite() : String?{
         return website
     }
+
+    override fun toString(): String {
+        return "[uid] $uid, [name] $username, [profile] $profile, [cover] $cover"
+
+    }
 }

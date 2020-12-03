@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -39,6 +40,8 @@ class MessageChatActivity : AppCompatActivity() {
     var apiService : APIService?= null
     lateinit var recyclerViewChats : RecyclerView
 
+    private var isVisitUserDeleted = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_message_chat)
@@ -54,6 +57,7 @@ class MessageChatActivity : AppCompatActivity() {
 
         apiService = Client.Client.getClient("https://fcm.googleapis.com/")!!.create(APIService::class.java)
 
+        isVisitUserDeleted = false
         // Get visit user ID
         userIdVisit = intent.getStringExtra("visit_id")!!
         // Current user
@@ -74,14 +78,21 @@ class MessageChatActivity : AppCompatActivity() {
         reference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val user: User? = snapshot.getValue(User::class.java)
+                if (user == null){
+                    isVisitUserDeleted = true
+                    val intent = Intent(this@MessageChatActivity, MainActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
+                    startActivity(intent)
+                    finish()
+                } else {
+                    username_mchat.text = user.getUsername()
+                    Picasso.get()
+                        .load(user.getProfile())
+                        .placeholder(R.drawable.avatar)
+                        .into(profile_image_mchat)
 
-                username_mchat.text = user!!.getUsername()
-                Picasso.get()
-                    .load(user.getProfile())
-                    .placeholder(R.drawable.avatar)
-                    .into(profile_image_mchat)
-
-                retrieveMessage(firebaseUser!!.uid, userIdVisit, user.getProfile())
+                    retrieveMessage(firebaseUser!!.uid, userIdVisit, user.getProfile())
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -153,9 +164,11 @@ class MessageChatActivity : AppCompatActivity() {
                         }
 
                         override fun onDataChange(snapshot: DataSnapshot) {
-                            val user = snapshot.getValue(User::class.java)!!
-                            if (notify){
-                                sendNotification(receiverId, user.getUsername(),message)
+                            if(snapshot.getValue(User::class.java) != null){
+                                val user = snapshot.getValue(User::class.java)!!
+                                if (notify){
+                                    sendNotification(receiverId, user.getUsername(),message)
+                                }
                             }
 
                             notify = false
@@ -223,7 +236,7 @@ class MessageChatActivity : AppCompatActivity() {
                             )
                             {
                                 if (response.code() == 200){
-                                    if (response.body()!!.success !== 1){
+                                    if (response.body()!!.success != 1){
                                         Toast.makeText(this@MessageChatActivity, "Failed, Nothing happen.",Toast.LENGTH_LONG).show()
                                     }
                                 }
@@ -308,23 +321,27 @@ class MessageChatActivity : AppCompatActivity() {
         }
     }
 
+
+    private var retrieveListener : ValueEventListener? = null
     private fun retrieveMessage(senderId: String, receiverId: String?, receiverImageUrl: String?) {
         mChatList = ArrayList()
         val reference = FirebaseDatabase.getInstance().reference.child("Chats")
 
-        reference.addValueEventListener(object : ValueEventListener {
+        retrieveListener = reference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                (mChatList as ArrayList<Chat>).clear()
-                for (shot in snapshot.children) {
-                    val chat = shot.getValue(Chat::class.java)
+                if (!isVisitUserDeleted){
+                    (mChatList as ArrayList<Chat>).clear()
+                    for (shot in snapshot.children) {
+                        val chat = shot.getValue(Chat::class.java)
 
-                    if (chat!!.getReceiver().equals(senderId) && chat.getSender().equals(receiverId)
-                        || chat.getReceiver().equals(receiverId) && chat.getSender().equals(senderId)) {
-                        (mChatList as ArrayList<Chat>).add(chat)
+                        if (chat!!.getReceiver().equals(senderId) && chat.getSender().equals(receiverId)
+                            || chat.getReceiver().equals(receiverId) && chat.getSender().equals(senderId)) {
+                            (mChatList as ArrayList<Chat>).add(chat)
+                        }
+
+                        chatsAdapter = ChatsAdapter(this@MessageChatActivity, mChatList as ArrayList<Chat>, receiverImageUrl!!)
+                        recyclerViewChats.adapter = chatsAdapter
                     }
-
-                    chatsAdapter = ChatsAdapter(this@MessageChatActivity, mChatList as ArrayList<Chat>, receiverImageUrl!!)
-                    recyclerViewChats.adapter = chatsAdapter
                 }
             }
 
@@ -338,28 +355,37 @@ class MessageChatActivity : AppCompatActivity() {
     private fun seenMessage(userId: String) {
         reference = FirebaseDatabase.getInstance().reference.child("Chats")
 
-        seenListener = reference!!.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                for (shot in snapshot.children) {
-                    val chat = shot.getValue(Chat::class.java)
+        if (reference != null){
+            seenListener = reference!!.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for (shot in snapshot.children) {
+                        val chat = shot.getValue(Chat::class.java)
 
-                    if (chat!!.getReceiver().equals(firebaseUser!!.uid) && chat.getSender().equals(userId)) {
-                        val hashMap = HashMap<String, Any>()
-                        hashMap["isSeen"] = true
-                        shot.ref.updateChildren(hashMap)
+                        if (chat!!.getReceiver().equals(firebaseUser!!.uid) && chat.getSender().equals(userId)) {
+                            val hashMap = HashMap<String, Any>()
+                            hashMap["isSeen"] = true
+                            shot.ref.updateChildren(hashMap)
+                        }
                     }
                 }
-            }
 
-            override fun onCancelled(error: DatabaseError) {
+                override fun onCancelled(error: DatabaseError) {
 
-            }
-        })
+                }
+            })
+        }
+
     }
 
     override fun onPause() {
         super.onPause()
-
         reference!!.removeEventListener(seenListener!!)
+    }
+
+    override fun onDestroy() {
+        if (retrieveListener != null){
+            reference!!.removeEventListener(retrieveListener!!)
+        }
+        super.onDestroy()
     }
 }
