@@ -5,5 +5,14 @@
     <color name="colorAccent">#1C223C</color>
     <color name="colorProfile">#1C223C</color>
     <color name="forestGreen">#10564F</color>
-    <color name="pimary">#EC325A</color>
+    <color name="gray">#7E7E7E</color>
+    <color name="primary">#EC325A</color>
+    <color name="white">#FFFFFF</color>
+    <color name="lightPrimary">#F58EA5</color>
+    <color name="dark">#1A1A1A</color>
+    <color name="lightGray">#E6E6E6</color>
+    <color name="lighterSecondary">#F3FCF0</color>
+    <color name="secondary">#4BBB25</color>
+    <color name="lighterBlue">#ECEEFD</color>
+    <color name="lighterPink">#FDEDF1</color>
 </resources>
