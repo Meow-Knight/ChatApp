@@ -74,6 +74,7 @@ class WelcomeActivity : AppCompatActivity() {
         }
 
         bt_login_google.setOnClickListener {
+            icon_google.visibility = View.GONE
             progress_bar.visibility = View.VISIBLE
             signIn()
         }
@@ -99,6 +100,7 @@ class WelcomeActivity : AppCompatActivity() {
                 isCheckedExistUser = false
                 mUser = FirebaseAuth.getInstance().currentUser
                 progress_bar.visibility = View.GONE
+                icon_google.visibility = View.VISIBLE
                 if (task.isSuccessful) {
                     // check if email already exist (logged with email-password)
                     val mUserId = mUser!!.uid
