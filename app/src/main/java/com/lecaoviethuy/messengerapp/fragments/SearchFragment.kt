@@ -2,13 +2,11 @@ package com.lecaoviethuy.messengerapp.fragments
 
 import android.content.Context
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
+import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
@@ -27,7 +25,7 @@ class SearchFragment : Fragment() {
     private var userAdapter : UserAdapter? = null
     private var mUsers : List<User>? = null
     private var rvUsers : RecyclerView? = null
-    private var searchUser : EditText ? =null
+    private var searchUser : SearchView? =null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,17 +49,17 @@ class SearchFragment : Fragment() {
         mUsers = ArrayList()
         retrieveAllUsers(view.context)
 
-        searchUser!!.addTextChangedListener(object  : TextWatcher{
-            override fun afterTextChanged(p0: Editable?) {
-
+        searchUser!!.setOnQueryTextListener(object : SearchView.OnQueryTextListener{
+            override fun onQueryTextSubmit(p0: String?): Boolean {
+                return true
             }
 
-            override fun beforeTextChanged(cs: CharSequence?, p1: Int, p2: Int, p3: Int) {
+            override fun onQueryTextChange(p0: String?): Boolean {
+                if(p0 != null){
+                    searchForUser(p0.toString().toLowerCase(Locale.ROOT), view.context)
+                }
 
-            }
-
-            override fun onTextChanged(cs: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                searchForUser(cs.toString().toLowerCase(Locale.ROOT), view.context)
+                return true
             }
         })
 
@@ -78,7 +76,7 @@ class SearchFragment : Fragment() {
 
              override fun onDataChange(p0: DataSnapshot) {
                  (mUsers as ArrayList<User>).clear()
-                 if (searchUser!!.text.toString() == ""){
+                 if (searchUser!!.query.toString() == ""){
                      for (snapshot in p0.children){
                          val user : User? = snapshot.getValue(User::class.java)
                          if (!(user!!.getUid()).equals(firebaseUserID)){

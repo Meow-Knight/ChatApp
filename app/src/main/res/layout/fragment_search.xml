@@ -3,15 +3,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@android:color/white"
-    tools:context=".fragments.SearchFragment">
+    tools:context=".fragments.SearchFragment"
+    android:padding="10dp">
 
-   <EditText
+   <androidx.appcompat.widget.SearchView
        android:id="@+id/searchUser"
        android:layout_width="match_parent"
-       android:layout_height="wrap_content"
+       android:layout_height="50dp"
+       android:background="@drawable/background_searchview"
        android:layout_margin="6dp"
-       android:hint="Search users here..."/>
+       android:layoutDirection="rtl"
+       app:searchIcon="@drawable/icon_search"
+       android:hint="Search one person..."/>
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/searchList"
         android:layout_below="@+id/searchUser"
