@@ -5,89 +5,220 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MessageChatActivity"
-    android:background="#e6e6e6">
+    android:background="@color/white">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/barLayout_message_chat"
+    <RelativeLayout
+        android:id="@+id/header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        android:background="@drawable/header_eclipse">
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar_message_chat"
-            android:layout_width="match_parent"
+        <Button
+            android:id="@+id/back_button"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginStart="24dp"
+            android:background="@drawable/icon_black_back" />
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/profile_image_mchat"
+            android:layout_width="68dp"
+            android:layout_height="68dp"
+            android:layout_marginTop="24dp"
+            android:layout_centerHorizontal="true"
+            app:civ_border_width="2dp"
+            app:civ_border_color="@color/primary"
+            android:src="@drawable/ic_profile"/>
+
+        <TextView
+            android:id="@+id/username_mchat"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="?attr/colorPrimaryDark"
-            app:popupTheme="@style/AppTheme.PopupOverlay">
+            style="@style/Text_strong"
+            android:layout_below="@id/profile_image_mchat"
+            android:text="@string/tmp_string"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="8dp"/>
 
-            <LinearLayout
-                android:id="@+id/container_info"
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cv_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="50dp"
+            android:layout_below="@id/username_mchat"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="4dp"
+            android:backgroundTint="@color/gray"
+            android:elevation="0dp">
+
+            <TextView
+                android:id="@+id/tv_status"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal">
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:fontFamily="@font/segoeui_semibold"
+                android:textSize="10dp"
+                android:textColor="@color/white"
+                android:text="@string/tmp_string" />
+
+        </androidx.cardview.widget.CardView>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/cv_status"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="16dp">
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cv_clear"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                app:cardCornerRadius="50dp"
+                android:backgroundTint="@color/primary"
+                android:elevation="0dp">
+
                 <de.hdodenhof.circleimageview.CircleImageView
-                    android:id="@+id/profile_image_mchat"
                     android:layout_width="32dp"
                     android:layout_height="32dp"
-                    android:src="@drawable/ic_profile"/>
+                    android:padding="8dp"
+                    android:src="@drawable/icon_x" />
 
-                <TextView
-                    android:id="@+id/username_mchat"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="18sp"
-                    android:layout_marginLeft="26dp"
-                    android:textColor="@android:color/white"
-                    android:text="User Name"
-                    android:textStyle="bold"/>
-            </LinearLayout>
-        </androidx.appcompat.widget.Toolbar>
+            </androidx.cardview.widget.CardView>
 
-    </com.google.android.material.appbar.AppBarLayout>
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cv_call"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:layout_toRightOf="@id/cv_clear"
+                app:cardCornerRadius="50dp"
+                android:backgroundTint="@color/secondary"
+                android:elevation="0dp">
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:padding="8dp"
+                    android:src="@drawable/icon_phone" />
+
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cv_theme"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@id/cv_call"
+                app:cardCornerRadius="50dp"
+                android:backgroundTint="@color/secondary"
+                android:elevation="0dp">
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:padding="8dp"
+                    android:src="@drawable/icon_paint" />
+
+            </androidx.cardview.widget.CardView>
+
+        </RelativeLayout>
+
+    </RelativeLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_chats"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#EEF7FB"
-        android:layout_below="@+id/barLayout_message_chat"
+        android:layout_marginTop="16dp"
+        android:layout_marginHorizontal="24dp"
+        android:backgroundTint="@android:color/transparent"
+        android:layout_below="@+id/header"
         android:layout_above="@+id/relative_layout_bottom"/>
 
     <RelativeLayout
         android:id="@+id/relative_layout_bottom"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
-        android:padding="6dp"
-        android:layout_alignParentBottom="true">
+        android:layout_alignParentBottom="true"
+        android:backgroundTint="@android:color/transparent">
+
+
+        <View
+            android:id="@+id/divider_line"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/lightGray" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/divider_line"
+            android:layout_marginLeft="24dp"
+            android:layout_marginVertical="12dp"
+            android:layout_alignParentStart="true"
+            android:layout_toLeftOf="@id/attach_image_file_btn"
+            android:backgroundTint="@android:color/transparent">
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="50dp"
+                app:cardElevation="0dp"
+                android:backgroundTint="@color/lighterBlue">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:backgroundTint="@android:color/transparent">
+
+                    <EditText
+                        android:id="@+id/text_message"
+                        style="@style/Text_muted"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="12dp"
+                        android:layout_marginVertical="8dp"
+                        android:layout_alignParentStart="true"
+                        android:layout_toStartOf="@id/send_message_btn"
+                        android:background="@null"
+                        android:hint="Write your message here..." />
+
+                    <ImageView
+                        android:id="@+id/send_message_btn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginEnd="8dp"
+                        android:src="@drawable/icon_send" />
+
+                </RelativeLayout>
+
+            </androidx.cardview.widget.CardView>
+
+        </RelativeLayout>
 
         <ImageView
             android:id="@+id/attach_image_file_btn"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="@drawable/ic_attach_file"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentLeft="true"/>
-
-        <EditText
-            android:id="@+id/text_message"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:hint="write your message here..."
-            android:layout_toRightOf="@id/attach_image_file_btn"
-            android:layout_toLeftOf="@+id/send_message_btn"
-            android:layout_centerVertical="true"
-            android:layout_marginHorizontal="6dp"/>
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/icon_gallery"
+            android:layout_toStartOf="@id/take_picture_btn"
+            android:layout_centerVertical="true"/>
 
         <ImageView
-            android:id="@+id/send_message_btn"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="@drawable/ic_action_name"
+            android:id="@+id/take_picture_btn"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/icon_take_a_picture"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="24dp"
             android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"/>
+            android:layout_centerVertical="true"/>
 
     </RelativeLayout>
 

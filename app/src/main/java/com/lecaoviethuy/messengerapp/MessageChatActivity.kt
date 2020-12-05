@@ -3,12 +3,13 @@ package com.lecaoviethuy.messengerapp
 import android.app.Activity
 import android.app.ProgressDialog
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
+import android.os.Environment
+import android.provider.MediaStore
 import android.widget.Toast
-import androidx.appcompat.widget.Toolbar
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.tasks.Continuation
@@ -17,43 +18,54 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.StorageTask
 import com.google.firebase.storage.UploadTask
 import com.lecaoviethuy.messengerapp.adapterClasses.ChatsAdapter
-import com.lecaoviethuy.messengerapp.notifications.*
 import com.lecaoviethuy.messengerapp.fragments.APIService
 import com.lecaoviethuy.messengerapp.modelClasses.Chat
 import com.lecaoviethuy.messengerapp.modelClasses.MessageString
 import com.lecaoviethuy.messengerapp.modelClasses.User
+import com.lecaoviethuy.messengerapp.notifications.*
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_message_chat.*
 import retrofit2.Call
 import retrofit2.Response
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.IOException
+import java.lang.Exception
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 class MessageChatActivity : AppCompatActivity() {
     var userIdVisit : String = ""
     var firebaseUser : FirebaseUser ? = null
     var chatsAdapter : ChatsAdapter? = null
     var mChatList : List<Chat>? = null
+    var backgroundImageUrl: String? = null
     private var reference : DatabaseReference? = null
+    private var storageRef : StorageReference?= null
     var notify = false
     var apiService : APIService?= null
     lateinit var recyclerViewChats : RecyclerView
 
     private var isVisitUserDeleted = false
 
+    companion object {
+        @JvmStatic
+        val REQUEST_IMAGE_CAPTURE = 813
+        @JvmStatic
+        val PICK_IMAGE = 438
+        @JvmStatic
+        val TAG: String? = this::class.simpleName
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_message_chat)
-
-        val toolbar : Toolbar = findViewById(R.id.toolbar_message_chat)
-        setSupportActionBar(toolbar)
-
-        supportActionBar!!.title = ""
-        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-        toolbar.setNavigationOnClickListener {
-            finish()
-        }
 
         apiService = Client.Client.getClient("https://fcm.googleapis.com/")!!.create(APIService::class.java)
 
@@ -75,10 +87,13 @@ class MessageChatActivity : AppCompatActivity() {
         val reference = FirebaseDatabase.getInstance().reference
             .child("Users").child(userIdVisit)
 
+        // Get Firebase storage
+        storageRef = FirebaseStorage.getInstance().reference
+
         reference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val user: User? = snapshot.getValue(User::class.java)
-                if (user == null){
+                if (user == null) {
                     isVisitUserDeleted = true
                     val intent = Intent(this@MessageChatActivity, MainActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -96,21 +111,37 @@ class MessageChatActivity : AppCompatActivity() {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Toast.makeText(this@MessageChatActivity,"Can't get user profile!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@MessageChatActivity,
+                    "Can't get user profile!",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         })
 
-        // Add send btn event
+        // Add btn event
         send_message_btn.setOnClickListener {
             notify = true
             val message = text_message.text.toString()
             if (message == "") {
-                Toast.makeText(this@MessageChatActivity, "Please write a message, please...", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@MessageChatActivity,
+                    "Please write a message, please...",
+                    Toast.LENGTH_SHORT
+                ).show()
             } else {
                 sendMessageToUser(firebaseUser!!.uid, userIdVisit, message)
             }
 
             text_message.setText("")
+        }
+
+        take_picture_btn.setOnClickListener {
+            dispatchTakePictureIntent()
+        }
+
+        back_button.setOnClickListener {
+            finish()
         }
 
         // Add image event
@@ -119,23 +150,38 @@ class MessageChatActivity : AppCompatActivity() {
             val intent = Intent()
             intent.action = Intent.ACTION_GET_CONTENT
             intent.type = "image/*"
-            startActivityForResult(Intent.createChooser(intent,"Pick Image"), 438)
+            startActivityForResult(
+                Intent.createChooser(intent, "Pick Image"),
+                MessageChatActivity.PICK_IMAGE
+            )
         }
 
-        container_info.setOnClickListener {
+        // navigate when tap in avatar
+        profile_image_mchat.setOnClickListener {
             val intent = Intent(this, VisitUserProfileActivity::class.java)
             intent.putExtra("visit_user_id", userIdVisit)
             startActivity(intent)
         }
 
+        // seen message action
         seenMessage(userIdVisit)
     }
 
     // how to send message to user
-    private fun sendMessageToUser(senderId: String, receiverId : String?, message: String) {
+    private fun sendMessageToUser(
+        senderId: String,
+        receiverId: String?,
+        message: String,
+        imageUrl: String? = "",
+        messageId: String? = null
+    ) {
         val reference = FirebaseDatabase.getInstance().reference
+
         // new message
-        val messageKey = reference.push().key
+        var messageKey: String? = messageId
+        if (messageId == null) {
+            messageKey = reference.push().key
+        }
 
         // body data
         val messageHashMap = HashMap<String, Any?>()
@@ -143,7 +189,7 @@ class MessageChatActivity : AppCompatActivity() {
         messageHashMap["message"] = message
         messageHashMap["receiver"] = receiverId
         messageHashMap["isSeen"] = false
-        messageHashMap["url"] = ""
+        messageHashMap["url"] = imageUrl
         messageHashMap["messageId"] = messageKey
         messageHashMap["time"] = System.currentTimeMillis()
 
@@ -159,15 +205,15 @@ class MessageChatActivity : AppCompatActivity() {
                     val userReference = FirebaseDatabase.getInstance().reference
                         .child("Users").child(firebaseUser!!.uid)
 
-                    userReference.addValueEventListener(object  : ValueEventListener{
+                    userReference.addValueEventListener(object : ValueEventListener {
                         override fun onCancelled(error: DatabaseError) {
                         }
 
                         override fun onDataChange(snapshot: DataSnapshot) {
-                            if(snapshot.getValue(User::class.java) != null){
+                            if (snapshot.getValue(User::class.java) != null) {
                                 val user = snapshot.getValue(User::class.java)!!
-                                if (notify){
-                                    sendNotification(receiverId, user.getUsername(),message)
+                                if (notify) {
+                                    sendNotification(receiverId, user.getUsername(), message)
                                 }
                             }
 
@@ -201,7 +247,11 @@ class MessageChatActivity : AppCompatActivity() {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Toast.makeText(this@MessageChatActivity,"sent message error, try again...", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@MessageChatActivity,
+                    "sent message error, try again...",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         })
 
@@ -213,31 +263,35 @@ class MessageChatActivity : AppCompatActivity() {
         val ref = FirebaseDatabase.getInstance().reference.child("Tokens")
         val query = ref.orderByKey().equalTo(receiverId)
 
-        query.addValueEventListener(object : ValueEventListener{
+        query.addValueEventListener(object : ValueEventListener {
             override fun onCancelled(error: DatabaseError) {
 
             }
 
             override fun onDataChange(p0: DataSnapshot) {
-                for (snapshot in p0.children){
-                    val  token : Token? = snapshot.getValue(Token::class.java)
-                    val data = Data(firebaseUser!!.uid
-                        ,R.mipmap.ic_icon_foreground
-                        ,"$username: $message"
-                        , "New Message"
-                        ,userIdVisit)
+                for (snapshot in p0.children) {
+                    val token: Token? = snapshot.getValue(Token::class.java)
+                    val data = Data(
+                        firebaseUser!!.uid,
+                        R.mipmap.ic_icon_foreground,
+                        "$username: $message",
+                        "New Message",
+                        userIdVisit
+                    )
                     val sender = Sender(data, token!!.getToken().toString())
                     apiService!!.sendNotification(sender)
-                        .enqueue(object : retrofit2.Callback<MyResponse>
-                        {
-                            override fun onResponse (
+                        .enqueue(object : retrofit2.Callback<MyResponse> {
+                            override fun onResponse(
                                 call: Call<MyResponse>,
                                 response: Response<MyResponse>
-                            )
-                            {
-                                if (response.code() == 200){
-                                    if (response.body()!!.success != 1){
-                                        Toast.makeText(this@MessageChatActivity, "Failed, Nothing happen.",Toast.LENGTH_LONG).show()
+                            ) {
+                                if (response.code() == 200) {
+                                    if (response.body()!!.success != 1) {
+                                        Toast.makeText(
+                                            this@MessageChatActivity,
+                                            "Failed, Nothing happen.",
+                                            Toast.LENGTH_LONG
+                                        ).show()
                                     }
                                 }
                             }
@@ -255,69 +309,13 @@ class MessageChatActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == 438 && resultCode == Activity.RESULT_OK && data != null && data.data != null) {
-            // show progressbar
-            val progressBar = ProgressDialog(this)
-            progressBar.setMessage("image is uploading, please wait...")
-            progressBar.show()
+        if (requestCode == MessageChatActivity.PICK_IMAGE && resultCode == Activity.RESULT_OK && data != null) {
+            uploadFileImageToDatabase(data.data)
+        }
 
-            // upload chat image
-            val fileUri = data.data
-            val storageReference =  FirebaseStorage.getInstance().reference.child("Chat Images")
-            val ref = FirebaseDatabase.getInstance().reference
-            val messageId = ref.push().key
-            val filePath = storageReference.child("$messageId.jpg")
-
-            val uploadTask : StorageTask<*>
-            uploadTask = filePath.putFile(fileUri!!)
-
-            uploadTask.continueWithTask(Continuation <UploadTask.TaskSnapshot, Task<Uri>>{ task ->
-                if (task.isSuccessful){
-                    task.exception?.let {
-                        throw it
-                    }
-                }
-                return@Continuation filePath.downloadUrl
-            }).addOnCompleteListener {task ->
-                if (task.isSuccessful){
-                    updateChatList()
-                    val downloadUri = task.result
-                    val url = downloadUri.toString()
-
-                    val messageHashMap = HashMap<String, Any?>()
-                    messageHashMap["sender"] = firebaseUser!!.uid
-                    messageHashMap["message"] = MessageString.RECEIVE_IMAGE.message
-                    messageHashMap["receiver"] = userIdVisit
-                    messageHashMap["isSeen"] = false
-                    messageHashMap["url"] = url
-                    messageHashMap["messageId"] = messageId
-
-                    ref.child("Chats").child(messageId!!).setValue(messageHashMap)
-                        .addOnCompleteListener{task ->
-                            if (task.isSuccessful){
-                                progressBar.dismiss()
-                                val reference = FirebaseDatabase.getInstance().reference
-                                    .child("Users").child(firebaseUser!!.uid)
-
-                                reference.addValueEventListener(object : ValueEventListener{
-                                    override fun onCancelled(error: DatabaseError) {
-
-                                    }
-
-                                    override fun onDataChange(snapshot: DataSnapshot) {
-                                        val user = snapshot.getValue(User::class.java)
-                                        if (notify){
-                                            sendNotification(userIdVisit, user!!.getUsername(), MessageString.RECEIVE_IMAGE.message)
-                                        }
-
-                                        notify = false
-                                    }
-
-                                })
-                            }
-                        }
-                }
-            }
+        if (requestCode == MessageChatActivity.REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK && data != null) {
+            val imageBitmap = data.extras!!.get("data") as Bitmap
+            uploadBitmapImageToDatabase(imageBitmap)
         }
     }
 
@@ -329,17 +327,26 @@ class MessageChatActivity : AppCompatActivity() {
 
         retrieveListener = reference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                if (!isVisitUserDeleted){
+                if (!isVisitUserDeleted) {
                     (mChatList as ArrayList<Chat>).clear()
                     for (shot in snapshot.children) {
                         val chat = shot.getValue(Chat::class.java)
 
-                        if (chat!!.getReceiver().equals(senderId) && chat.getSender().equals(receiverId)
-                            || chat.getReceiver().equals(receiverId) && chat.getSender().equals(senderId)) {
+                        if (chat!!.getReceiver().equals(senderId) && chat.getSender().equals(
+                                receiverId
+                            )
+                            || chat.getReceiver().equals(receiverId) && chat.getSender().equals(
+                                senderId
+                            )
+                        ) {
                             (mChatList as ArrayList<Chat>).add(chat)
                         }
 
-                        chatsAdapter = ChatsAdapter(this@MessageChatActivity, mChatList as ArrayList<Chat>, receiverImageUrl!!)
+                        chatsAdapter = ChatsAdapter(
+                            this@MessageChatActivity,
+                            mChatList as ArrayList<Chat>,
+                            receiverImageUrl!!
+                        )
                         recyclerViewChats.adapter = chatsAdapter
                     }
                 }
@@ -361,7 +368,11 @@ class MessageChatActivity : AppCompatActivity() {
                     for (shot in snapshot.children) {
                         val chat = shot.getValue(Chat::class.java)
 
-                        if (chat!!.getReceiver().equals(firebaseUser!!.uid) && chat.getSender().equals(userId)) {
+                        if (chat!!.getReceiver().equals(firebaseUser!!.uid) && chat.getSender()
+                                .equals(
+                                    userId
+                                )
+                        ) {
                             val hashMap = HashMap<String, Any>()
                             hashMap["isSeen"] = true
                             shot.ref.updateChildren(hashMap)
@@ -375,6 +386,104 @@ class MessageChatActivity : AppCompatActivity() {
             })
         }
 
+    }
+
+    // Capture image functions
+    private fun dispatchTakePictureIntent() {
+        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        try {
+            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
+        } catch (error: Exception) {
+            error.printStackTrace()
+            Toast.makeText(this, "Can't take a picture now", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun uploadBitmapImageToDatabase(imageBitmap: Bitmap?) {
+        val progressBar = ProgressDialog(this)
+        progressBar.setMessage("image is uploading, please wait...")
+        progressBar.show()
+
+        if (imageBitmap != null) {
+            val stream = ByteArrayOutputStream()
+            imageBitmap!!.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+
+            val storageReference = storageRef!!.child("Chat Images")
+            val ref = FirebaseDatabase.getInstance().reference
+            val messageId = ref.push().key
+
+            val fileRef = storageReference.child("$messageId.jpg")
+            val uploadTask: StorageTask<*>
+            uploadTask = fileRef.putBytes(stream.toByteArray());
+            uploadTask.continueWithTask(Continuation<UploadTask.TaskSnapshot, Task<Uri>> { task ->
+                if (task.isSuccessful) {
+                    task.exception?.let {
+                        throw  it
+                    }
+                }
+                return@Continuation fileRef.downloadUrl
+            }).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val downloadUri = task.result
+                    val imageUrl = downloadUri.toString()
+
+                    sendMessageToUser(
+                        firebaseUser!!.uid,
+                        userIdVisit,
+                        MessageString.RECEIVE_IMAGE.message,
+                        imageUrl,
+                        messageId
+                    )
+
+                    progressBar.dismiss()
+                }
+            }
+        } else {
+            Toast.makeText(this, "Can't get image Uri", Toast.LENGTH_SHORT).show()
+            progressBar.dismiss()
+        }
+    }
+
+    private fun uploadFileImageToDatabase(imageUri: Uri?) {
+        val progressBar = ProgressDialog(this)
+        progressBar.setMessage("image is uploading, please wait...")
+        progressBar.show()
+
+        if (imageUri!= null){
+            val storageReference =  storageRef!!.child("Chat Images")
+            val ref = FirebaseDatabase.getInstance().reference
+            val messageId = ref.push().key
+
+            val fileRef = storageReference.child("$messageId.jpg")
+            val uploadTask : StorageTask<*>
+            uploadTask = fileRef.putFile(imageUri)
+            uploadTask.continueWithTask(Continuation<UploadTask.TaskSnapshot, Task<Uri>> { task ->
+                if (task.isSuccessful) {
+                    task.exception?.let {
+                        throw  it
+                    }
+                }
+                return@Continuation fileRef.downloadUrl
+            }).addOnCompleteListener{ task ->
+                if (task.isSuccessful){
+                    val downloadUri = task.result
+                    val imageUrl = downloadUri.toString()
+
+                    sendMessageToUser(
+                        firebaseUser!!.uid,
+                        userIdVisit,
+                        MessageString.RECEIVE_IMAGE.message,
+                        imageUrl,
+                        messageId
+                    )
+
+                    progressBar.dismiss()
+                }
+            }
+        } else {
+            Toast.makeText(this, "Can't get image Uri", Toast.LENGTH_SHORT).show()
+            progressBar.dismiss()
+        }
     }
 
     override fun onPause() {
