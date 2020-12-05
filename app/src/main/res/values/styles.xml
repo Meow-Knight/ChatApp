@@ -16,5 +16,20 @@
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    
+    <style name="Text_strong" >
+        <item name="fontFamily">@font/segoeui_semibold</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="Text_regular" >
+        <item name="fontFamily">@font/segoe_ui</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="Text_muted" >
+        <item name="fontFamily">@font/segoe_ui</item>
+        <item name="android:textSize">10sp</item>
+    </style>
 
 </resources>
