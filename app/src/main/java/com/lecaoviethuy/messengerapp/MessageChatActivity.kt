@@ -2,12 +2,16 @@ package com.lecaoviethuy.messengerapp
 
 import android.app.Activity
 import android.app.ProgressDialog
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.provider.MediaStore
+import android.util.AttributeSet
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -23,20 +27,15 @@ import com.google.firebase.storage.StorageTask
 import com.google.firebase.storage.UploadTask
 import com.lecaoviethuy.messengerapp.adapterClasses.ChatsAdapter
 import com.lecaoviethuy.messengerapp.fragments.APIService
-import com.lecaoviethuy.messengerapp.modelClasses.Chat
-import com.lecaoviethuy.messengerapp.modelClasses.MessageString
-import com.lecaoviethuy.messengerapp.modelClasses.User
+import com.lecaoviethuy.messengerapp.modelClasses.*
 import com.lecaoviethuy.messengerapp.notifications.*
 import com.squareup.picasso.Picasso
+import com.squareup.picasso.Target
 import kotlinx.android.synthetic.main.activity_message_chat.*
 import retrofit2.Call
 import retrofit2.Response
 import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.IOException
 import java.lang.Exception
-import java.text.SimpleDateFormat
-import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
@@ -46,7 +45,7 @@ class MessageChatActivity : AppCompatActivity() {
     var chatsAdapter : ChatsAdapter? = null
     var mChatList : List<Chat>? = null
     var backgroundImageUrl: String? = null
-    private var reference : DatabaseReference? = null
+    private var databaseRef : DatabaseReference? = null
     private var storageRef : StorageReference?= null
     var notify = false
     var apiService : APIService?= null
@@ -60,7 +59,15 @@ class MessageChatActivity : AppCompatActivity() {
         @JvmStatic
         val PICK_IMAGE = 438
         @JvmStatic
+        val CHANGE_CHAT_BG_IMAGE = 1052
+        @JvmStatic
         val TAG: String? = this::class.simpleName
+    }
+
+    init {
+        // Get Firebase services
+        storageRef = FirebaseStorage.getInstance().reference
+        databaseRef = FirebaseDatabase.getInstance().reference
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,13 +91,10 @@ class MessageChatActivity : AppCompatActivity() {
         recyclerViewChats.layoutManager = linearLayoutManager
 
         // visit User
-        val reference = FirebaseDatabase.getInstance().reference
+        val usersReference = databaseRef!!
             .child("Users").child(userIdVisit)
 
-        // Get Firebase storage
-        storageRef = FirebaseStorage.getInstance().reference
-
-        reference.addValueEventListener(object : ValueEventListener {
+        usersReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val user: User? = snapshot.getValue(User::class.java)
                 if (user == null) {
@@ -105,6 +109,14 @@ class MessageChatActivity : AppCompatActivity() {
                         .load(user.getProfile())
                         .placeholder(R.drawable.avatar)
                         .into(profile_image_mchat)
+
+                    val status: String? = user.getStatus();
+                    tv_status.text = status
+                    if (status == Status.ONLINE.statusString) {
+                        cv_status.background.setTint(resources.getColor(R.color.secondary))
+                    } else {
+                        cv_status.background.setTint(resources.getColor(R.color.gray))
+                    }
 
                     retrieveMessage(firebaseUser!!.uid, userIdVisit, user.getProfile())
                 }
@@ -140,11 +152,21 @@ class MessageChatActivity : AppCompatActivity() {
             dispatchTakePictureIntent()
         }
 
+        change_chat_bg_image_btn.setOnClickListener {
+            val intent = Intent()
+            intent.action = Intent.ACTION_GET_CONTENT
+            intent.type = "image/*"
+            startActivityForResult(
+                Intent.createChooser(intent, "Pick Image"),
+                MessageChatActivity.CHANGE_CHAT_BG_IMAGE
+            )
+        }
+
         back_button.setOnClickListener {
             finish()
         }
 
-        // Add image event
+        // Add attach image event
         attach_image_file_btn.setOnClickListener {
             notify = true
             val intent = Intent()
@@ -222,6 +244,64 @@ class MessageChatActivity : AppCompatActivity() {
                     })
                 }
             }
+    }
+
+    // View created
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+
+        // Chat information
+        val chatInfoRef: DatabaseReference = databaseRef!!
+            .child("ChatList")
+            .child(firebaseUser!!.uid)
+            .child(userIdVisit)
+
+        chatInfoRef.addValueEventListener(object : ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val chatInfo: ChatInfo = snapshot.getValue(ChatInfo::class.java) ?: return
+
+                val backgroundChatImageUrl: String = chatInfo!!.getbackgroundChatImageUrl()
+                if (backgroundChatImageUrl.isEmpty())
+                    return
+
+                // fill background image
+                Picasso.get()
+                    .load(backgroundChatImageUrl)
+                    .resize(container.width, container.height)
+                    .centerCrop()
+                    .into(object : Target {
+                        override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
+                            container.background = BitmapDrawable(resources, bitmap)
+                        }
+
+                        override fun onBitmapFailed(error: Exception?, errorDrawable: Drawable?) {
+                            error?.printStackTrace()
+                            Toast.makeText(
+                                this@MessageChatActivity,
+                                "Load background chat image fail",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+
+                        override fun onPrepareLoad(placeHolderDrawable: Drawable?) {
+                            null
+                        }
+
+                    })
+
+                // make something transparent
+                header.setBackgroundColor(resources.getColor(android.R.color.transparent))
+                divider_line.setBackgroundColor(resources.getColor(android.R.color.transparent))
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(
+                    this@MessageChatActivity,
+                    "Can't get chat background image!",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        })
     }
 
     private fun updateChatList(){
@@ -313,6 +393,10 @@ class MessageChatActivity : AppCompatActivity() {
             uploadFileImageToDatabase(data.data)
         }
 
+        if (requestCode == MessageChatActivity.CHANGE_CHAT_BG_IMAGE && resultCode == Activity.RESULT_OK && data != null) {
+            changeBackgroundChatImage(data.data)
+        }
+
         if (requestCode == MessageChatActivity.REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK && data != null) {
             val imageBitmap = data.extras!!.get("data") as Bitmap
             uploadBitmapImageToDatabase(imageBitmap)
@@ -360,10 +444,10 @@ class MessageChatActivity : AppCompatActivity() {
 
     private var seenListener: ValueEventListener? = null
     private fun seenMessage(userId: String) {
-        reference = FirebaseDatabase.getInstance().reference.child("Chats")
+        val chatsReference = databaseRef!!.child("Chats")
 
-        if (reference != null){
-            seenListener = reference!!.addValueEventListener(object : ValueEventListener {
+        if (chatsReference != null){
+            seenListener = chatsReference!!.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     for (shot in snapshot.children) {
                         val chat = shot.getValue(Chat::class.java)
@@ -444,6 +528,50 @@ class MessageChatActivity : AppCompatActivity() {
         }
     }
 
+    private fun changeBackgroundChatImage(imageUri: Uri?) {
+        val progressBar = ProgressDialog(this)
+        progressBar.setMessage("Background image is uploading, please wait...")
+        progressBar.show()
+
+        if (imageUri!= null){
+            val backgroundImageRef: DatabaseReference = databaseRef!!
+                .child("ChatList")
+                .child(firebaseUser!!.uid)
+                .child(userIdVisit)
+                .child("backgroundChatImageUrl")
+
+            backgroundImageRef.removeValue()
+                .addOnCompleteListener {
+                    val storageReference =  storageRef!!.child("Background Chat Images")
+                    val fileRef = storageReference.child(firebaseUser!!.uid + "_" + userIdVisit + ".jpg")
+                    val uploadTask : StorageTask<*>
+                    uploadTask = fileRef.putFile(imageUri)
+                    uploadTask.addOnSuccessListener{ snapshot ->
+                        val getUrlTask: Task<Uri> = snapshot.metadata!!.reference!!.downloadUrl
+                        getUrlTask.addOnSuccessListener { uriResult ->
+                            val downloadUri: Uri = uriResult
+                            val imageUrl = downloadUri.toString()
+
+                            backgroundImageRef.setValue(imageUrl)
+                            progressBar.dismiss()
+                        }
+                    }.addOnFailureListener {
+                        progressBar.dismiss()
+                        it.printStackTrace()
+                        Toast.makeText(this, "Can't change the background chat image now", Toast.LENGTH_SHORT).show()
+                    }
+                }.addOnFailureListener {
+                    progressBar.dismiss()
+                    it.printStackTrace()
+                    Toast.makeText(this, "Can't remove the background chat image now", Toast.LENGTH_SHORT).show()
+                }
+
+        } else {
+            Toast.makeText(this, "Can't get image Uri", Toast.LENGTH_SHORT).show()
+            progressBar.dismiss()
+        }
+    }
+
     private fun uploadFileImageToDatabase(imageUri: Uri?) {
         val progressBar = ProgressDialog(this)
         progressBar.setMessage("image is uploading, please wait...")
@@ -488,12 +616,12 @@ class MessageChatActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        reference!!.removeEventListener(seenListener!!)
+        databaseRef!!.removeEventListener(seenListener!!)
     }
 
     override fun onDestroy() {
         if (retrieveListener != null){
-            reference!!.removeEventListener(retrieveListener!!)
+            databaseRef!!.removeEventListener(retrieveListener!!)
         }
         super.onDestroy()
     }

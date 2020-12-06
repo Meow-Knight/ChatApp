@@ -146,9 +146,6 @@ class ChatsFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
-
-        chatListReference!!.removeEventListener(chatListRetrieveListener!!)
-        userReference!!.removeEventListener(userRetrieveListener!!)
     }
 
     companion object{
