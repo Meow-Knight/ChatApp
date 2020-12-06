@@ -15,4 +15,5 @@
     <color name="secondary">#4BBB25</color>
     <color name="lighterBlue">#ECEEFD</color>
     <color name="lighterPink">#FDEDF1</color>
+    <color name="lighterGray">#F0FAFA</color>
 </resources>

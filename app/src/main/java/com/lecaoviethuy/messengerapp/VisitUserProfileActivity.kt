@@ -4,7 +4,6 @@ import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import androidx.appcompat.widget.Toolbar
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -12,6 +11,16 @@ import com.google.firebase.database.ValueEventListener
 import com.lecaoviethuy.messengerapp.modelClasses.User
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_visit_user_profile.*
+import kotlinx.android.synthetic.main.activity_visit_user_profile.back
+import kotlinx.android.synthetic.main.activity_visit_user_profile.cover_image_visit_user
+import kotlinx.android.synthetic.main.activity_visit_user_profile.link_fb
+import kotlinx.android.synthetic.main.activity_visit_user_profile.link_ins
+import kotlinx.android.synthetic.main.activity_visit_user_profile.link_web
+import kotlinx.android.synthetic.main.activity_visit_user_profile.profile_image_visit_user
+import kotlinx.android.synthetic.main.activity_visit_user_profile.set_facebook
+import kotlinx.android.synthetic.main.activity_visit_user_profile.set_instagram
+import kotlinx.android.synthetic.main.activity_visit_user_profile.set_website
+import kotlinx.android.synthetic.main.activity_visit_user_profile.username_visit_user
 
 class VisitUserProfileActivity : AppCompatActivity() {
     private var visitUserId : String = ""
@@ -21,11 +30,7 @@ class VisitUserProfileActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_visit_user_profile)
 
-        val toolbar : Toolbar = findViewById(R.id.toolbar_profile)
-        setSupportActionBar(toolbar)
-        supportActionBar!!.title = "User Profile"
-        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-        toolbar.setNavigationOnClickListener {
+        back.setOnClickListener{
             finish()
         }
 
@@ -41,6 +46,29 @@ class VisitUserProfileActivity : AppCompatActivity() {
                     username_visit_user.text = user!!.getUsername()
                     Picasso.get().load(user!!.getCover()).into(cover_image_visit_user)
                     Picasso.get().load(user!!.getProfile()).into(profile_image_visit_user)
+                    var fbLink = user!!.getFacebook()
+                    fbLink = fbLink!!.replace("//","/")
+                    val fbLinks = fbLink.split("/")
+                    if (fbLinks.size > 2 && fbLinks[2] != ""){
+                        link_fb.text = fbLinks[2]
+                    }
+
+                    var insLink  = user!!.getInstagram()
+                    insLink = insLink!!.replace("//","/")
+                    val insLinks = insLink.split("/")
+                    if (insLinks.size > 2 && insLinks[2] != ""){
+                        link_ins.text = insLinks[2]
+                    }
+                    var websiteLink = user!!.getWebsite()
+                    if (websiteLink != "https://www.google.com"){
+                        websiteLink = websiteLink!!.replace("//","/")
+                        val websiteLinks = websiteLink.split("/")
+                        var text = ""
+                        for (i in 1 until websiteLinks.size){
+                            text += websiteLinks[i] + "/"
+                        }
+                        link_web.text = text
+                    }
                 }
             }
         })
