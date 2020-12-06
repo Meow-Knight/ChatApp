@@ -5,21 +5,45 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MessageChatActivity"
-    android:background="@color/white">
+    android:background="@color/white"
+    android:id="@+id/container">
 
     <RelativeLayout
         android:id="@+id/header"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="180dp"
         android:background="@drawable/header_eclipse">
 
         <Button
             android:id="@+id/back_button"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
             android:layout_marginTop="24dp"
             android:layout_marginStart="24dp"
             android:background="@drawable/icon_black_back" />
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cv_theme"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="24dp"
+            android:layout_marginEnd="24dp"
+            app:cardCornerRadius="50dp"
+            android:backgroundTint="@color/primary"
+            app:cardElevation="0dp">
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/change_chat_bg_image_btn"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:padding="8dp"
+                android:src="@drawable/icon_paint" />
+
+        </androidx.cardview.widget.CardView>
 
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/profile_image_mchat"
@@ -65,67 +89,6 @@
 
         </androidx.cardview.widget.CardView>
 
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/cv_status"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="16dp">
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cv_clear"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                app:cardCornerRadius="50dp"
-                android:backgroundTint="@color/primary"
-                android:elevation="0dp">
-
-                <de.hdodenhof.circleimageview.CircleImageView
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:padding="8dp"
-                    android:src="@drawable/icon_x" />
-
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cv_call"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:layout_toRightOf="@id/cv_clear"
-                app:cardCornerRadius="50dp"
-                android:backgroundTint="@color/secondary"
-                android:elevation="0dp">
-
-                <de.hdodenhof.circleimageview.CircleImageView
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:padding="8dp"
-                    android:src="@drawable/icon_phone" />
-
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cv_theme"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_toRightOf="@id/cv_call"
-                app:cardCornerRadius="50dp"
-                android:backgroundTint="@color/secondary"
-                android:elevation="0dp">
-
-                <de.hdodenhof.circleimageview.CircleImageView
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:padding="8dp"
-                    android:src="@drawable/icon_paint" />
-
-            </androidx.cardview.widget.CardView>
-
-        </RelativeLayout>
-
     </RelativeLayout>
 
     <androidx.recyclerview.widget.RecyclerView
@@ -143,8 +106,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:backgroundTint="@android:color/transparent">
-
+        android:background="@android:color/white">
 
         <View
             android:id="@+id/divider_line"
@@ -163,6 +125,7 @@
             android:backgroundTint="@android:color/transparent">
 
             <androidx.cardview.widget.CardView
+                android:id="@+id/cv_text_message_area"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="50dp"
@@ -176,7 +139,7 @@
 
                     <EditText
                         android:id="@+id/text_message"
-                        style="@style/Text_muted"
+                        style="@style/Text_regular"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginHorizontal="12dp"

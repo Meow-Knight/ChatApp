@@ -14,6 +14,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
 import com.lecaoviethuy.messengerapp.R
 import com.lecaoviethuy.messengerapp.ViewFullImageActivity
 import com.lecaoviethuy.messengerapp.controllers.StorageController
@@ -118,7 +120,10 @@ class ChatsAdapter (
             // show dialog delete when long click on it
             holder.imageViewArea!!.visibility = View.VISIBLE
             holder.container!!.visibility = View.GONE
-            Picasso.get().load(chat.getUrl()).into(holder.imageView)
+            Picasso.get()
+                .load(chat.getUrl())
+                .placeholder(R.drawable.image_chat_placeholder)
+                .into(holder.imageView)
 
             // show full image when click on it
             holder.imageView!!.setOnClickListener{
@@ -140,7 +145,16 @@ class ChatsAdapter (
                     builder.setItems(options) { _, i ->
                         when(i){
                             0 -> {
-                                deleteSentMessage(position, holder)
+                                val imageRef: StorageReference = FirebaseStorage.getInstance()
+                                    .getReferenceFromUrl(chat.getUrl()!!)
+                                imageRef.delete()
+                                    .addOnSuccessListener {
+                                        deleteSentMessage(position, holder)
+                                    }
+                                    .addOnFailureListener {
+                                        it.printStackTrace()
+                                        Toast.makeText(mContext, "Can't delete that message now", Toast.LENGTH_SHORT).show()
+                                    }
                             }
                         }
                     }
@@ -228,7 +242,7 @@ class ChatsAdapter (
     }
 
     private fun deleteSentMessage(position: Int, holder: MessageHolder){
-        val ref = FirebaseDatabase.getInstance().reference
+        FirebaseDatabase.getInstance().reference
                 .child("Chats")
                 .child(mChatList[position].getMessageId()!!)
                 .removeValue()
