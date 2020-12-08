@@ -20,19 +20,19 @@
         android:id="@+id/tv_welcome_welcome"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/welcome_to"
+        android:text="Sign up"
         android:textColor="@color/colorPrimaryDark"
         android:fontFamily="@font/segoe_ui"
         android:layout_marginTop="15dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/welcome_icon_app"
-        android:textSize="32sp" />
+        android:textSize="40sp" />
     <TextView
         android:id="@+id/tv_welcome_app_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="0dp"
+        android:layout_marginTop="5dp"
         android:fontFamily="@font/segoe_ui"
         android:text="@string/app_name"
         android:textColor="@color/primary"
@@ -56,7 +56,7 @@
             android:fontFamily="@font/segoe_ui"
             android:inputType="text"
             android:hint="Username"
-            android:textSize="14sp"
+            android:textSize="18sp"
             android:textColor="@color/forestGreen"
             android:textColorHint="@android:color/darker_gray"
             android:backgroundTint="@color/colorPrimary"/>
@@ -68,7 +68,7 @@
             android:fontFamily="@font/segoe_ui"
             android:inputType="textEmailAddress"
             android:hint="Email"
-            android:textSize="14sp"
+            android:textSize="18sp"
             android:textColor="@color/forestGreen"
             android:textColorHint="@android:color/darker_gray"
             android:backgroundTint="@color/colorPrimary"/>
@@ -80,7 +80,7 @@
             android:inputType="textPassword"
             android:fontFamily="@font/segoe_ui"
             android:hint="Password"
-            android:textSize="14sp"
+            android:textSize="18sp"
             android:textColor="@color/forestGreen"
             android:textColorHint="@android:color/darker_gray"
             android:backgroundTint="@color/colorPrimary"/>

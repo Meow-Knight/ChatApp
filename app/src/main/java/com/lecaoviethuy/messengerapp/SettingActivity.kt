@@ -168,7 +168,7 @@ class SettingActivity : AppCompatActivity() {
         * finally, back to welcome activity
         * */
         bt_delete_account.setOnClickListener {
-            val deleteDialog = AlertDialog.Builder(applicationContext)
+            val deleteDialog = AlertDialog.Builder(this@SettingActivity)
             deleteDialog.setTitle("Delete your account?")
                 .setMessage("Everything about your account will be deleted")
                 .setPositiveButton(
@@ -180,22 +180,22 @@ class SettingActivity : AppCompatActivity() {
                         .requestEmail()
                         .build()
 
-                    val mGoogleSignInClient = GoogleSignIn.getClient(applicationContext, gso)
+                    val mGoogleSignInClient = GoogleSignIn.getClient(this@SettingActivity, gso)
                     mGoogleSignInClient.signOut()
                     val user = FirebaseAuth.getInstance().currentUser
                     DatabaseController.deleteAll(user!!.uid) // this line can move on top but now i'm tired
                     user!!.delete().addOnCompleteListener {
                         Toast.makeText(
-                            applicationContext,
+                            this@SettingActivity,
                             "Deleted your account",
                             Toast.LENGTH_SHORT
                         ).show()
                         // log out
                         FirebaseAuth.getInstance().signOut()
 
-                        val intent = Intent(applicationContext, WelcomeActivity::class.java)
+                        val intent = Intent(this@SettingActivity, WelcomeActivity::class.java)
                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
-                        applicationContext.applicationContext.startActivity(intent)
+                        applicationContext.startActivity(intent)
 
                         dialog.dismiss()
                     }.addOnFailureListener {
