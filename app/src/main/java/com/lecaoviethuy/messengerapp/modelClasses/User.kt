@@ -10,6 +10,7 @@ class User {
     private var facebook: String = ""
     private var instagram: String = ""
     private var website: String = ""
+    private var phone : String =""
 
     constructor()
 
@@ -22,7 +23,8 @@ class User {
         search: String,
         facebook: String,
         instagram: String,
-        website: String
+        website: String,
+        phone :String
     ) {
         this.uid = uid
         this.username = username
@@ -33,6 +35,7 @@ class User {
         this.facebook = facebook
         this.instagram = instagram
         this.website = website
+        this.phone = phone
     }
 
     fun setUid(uid : String){
@@ -105,6 +108,14 @@ class User {
 
     fun getWebsite() : String?{
         return website
+    }
+
+    fun setPhone(phone : String){
+        this.phone = phone
+    }
+
+    fun getPhone() : String?{
+        return phone
     }
 
     override fun toString(): String {

@@ -58,7 +58,7 @@
             android:textSize="21sp"
             android:fontFamily="@font/segoe_ui"/>
         <ImageButton
-            android:id="@+id/set_name"
+            android:id="@+id/set_name_phone"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_toEndOf="@id/username_visit_user"

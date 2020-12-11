@@ -53,6 +53,7 @@ class SettingActivity : AppCompatActivity() {
     private var storageRef : StorageReference?= null
     private var coverChecker : String? = ""
     private var socialChecker : String?= ""
+    private var currentUser : User?=null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_setting)
@@ -69,6 +70,7 @@ class SettingActivity : AppCompatActivity() {
                 if (p0.exists()) {
                     val user: User? = p0.getValue(User::class.java)
                     if ((user!!.getUid()).equals(firebaseUser!!.uid)) {
+                        currentUser = user
                         username_visit_user.text = user.getUsername()
                         Picasso.get().load(user.getProfile()).into(profile_image_visit_user)
                         Picasso.get().load(user.getCover()).into(cover_image_visit_user)
@@ -132,8 +134,8 @@ class SettingActivity : AppCompatActivity() {
             setSocialLink()
         }
 
-        set_name.setOnClickListener {
-            setName()
+        set_name_phone.setOnClickListener {
+            setPhoneAndName()
         }
 
         set_cover_image_camera.setOnClickListener {
@@ -212,19 +214,29 @@ class SettingActivity : AppCompatActivity() {
         }
     }
 
-    private fun setName() {
+    private fun setPhoneAndName() {
         val builder : AlertDialog.Builder = AlertDialog.Builder(this@SettingActivity,R.style.Theme_AppCompat_DayNight_Dialog_Alert)
-        val editText = EditText(this@SettingActivity)
-        builder.setTitle("Change name")
-        builder.setView(editText)
+        builder.setTitle("Change info")
+        val mView = layoutInflater.inflate(R.layout.dialog_phone_name,null)
+        val editTextName = mView.findViewById<EditText>(R.id.set_name)
+        editTextName.hint = currentUser!!.getUsername()
+        val editTextPhone = mView.findViewById<EditText>(R.id.set_phone)
+        editTextPhone.hint = currentUser!!.getPhone()
+        builder.setView(mView)
         builder.setPositiveButton("Change", DialogInterface.OnClickListener{
                 _, _ ->
-            val name = editText.text.toString()
+            val name = editTextName.text.toString()
+            val phone = editTextPhone.text.toString()
 
-            if (name == ""){
+            if (name == "" && phone == ""){
                 Toast.makeText(this,"Please write something...", Toast.LENGTH_SHORT).show()
             } else {
-                saveName(name)
+                if (name != ""){
+                    saveName(name)
+                }
+                if (phone != "") {
+                    savePhone(phone)
+                }
             }
         })
         builder.setNegativeButton("Cancel", DialogInterface.OnClickListener{
@@ -234,6 +246,17 @@ class SettingActivity : AppCompatActivity() {
 
         builder.show()
 
+    }
+
+    private fun savePhone(phone: String) {
+        val mapPhone = HashMap<String,Any>()
+        mapPhone["phone"] = phone
+        userReference!!.updateChildren(mapPhone).addOnCompleteListener{
+                task ->
+            if (task.isSuccessful){
+                Toast.makeText(this,"Update successfully...", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun saveName(name :String) {

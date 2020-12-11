@@ -2,7 +2,6 @@ package com.lecaoviethuy.messengerapp
 
 import android.app.Activity
 import android.app.ProgressDialog
-import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
@@ -10,8 +9,6 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.AttributeSet
-import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -35,20 +32,17 @@ import kotlinx.android.synthetic.main.activity_message_chat.*
 import retrofit2.Call
 import retrofit2.Response
 import java.io.ByteArrayOutputStream
-import java.lang.Exception
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 class MessageChatActivity : AppCompatActivity() {
     var userIdVisit : String = ""
     var firebaseUser : FirebaseUser ? = null
     var chatsAdapter : ChatsAdapter? = null
     var mChatList : List<Chat>? = null
-    var backgroundImageUrl: String? = null
     private var databaseRef : DatabaseReference? = null
     private var storageRef : StorageReference?= null
     var notify = false
     var apiService : APIService?= null
+    var mUser: User?= null
     lateinit var recyclerViewChats : RecyclerView
 
     private var isVisitUserDeleted = false
@@ -96,21 +90,21 @@ class MessageChatActivity : AppCompatActivity() {
 
         usersReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val user: User? = snapshot.getValue(User::class.java)
-                if (user == null) {
+                mUser = snapshot.getValue(User::class.java)
+                if (mUser == null) {
                     isVisitUserDeleted = true
                     val intent = Intent(this@MessageChatActivity, MainActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
                     startActivity(intent)
                     finish()
                 } else {
-                    username_mchat.text = user.getUsername()
+                    username_mchat.text = mUser!!.getUsername()
                     Picasso.get()
-                        .load(user.getProfile())
+                        .load(mUser!!.getProfile())
                         .placeholder(R.drawable.avatar)
                         .into(profile_image_mchat)
 
-                    val status: String? = user.getStatus();
+                    val status: String? = mUser!!.getStatus();
                     tv_status.text = status
                     if (status == Status.ONLINE.statusString) {
                         cv_status.background.setTint(resources.getColor(R.color.secondary))
@@ -118,7 +112,7 @@ class MessageChatActivity : AppCompatActivity() {
                         cv_status.background.setTint(resources.getColor(R.color.gray))
                     }
 
-                    retrieveMessage(firebaseUser!!.uid, userIdVisit, user.getProfile())
+                    retrieveMessage(firebaseUser!!.uid, userIdVisit, mUser!!.getProfile())
                 }
             }
 
@@ -182,6 +176,14 @@ class MessageChatActivity : AppCompatActivity() {
         profile_image_mchat.setOnClickListener {
             val intent = Intent(this, VisitUserProfileActivity::class.java)
             intent.putExtra("visit_user_id", userIdVisit)
+            startActivity(intent)
+        }
+
+        //call phone
+        call_phone.setOnClickListener{
+            val number = mUser!!.getPhone()
+            val dial = "tel:$number"
+            val intent = Intent(Intent.ACTION_CALL, Uri.parse(dial))
             startActivity(intent)
         }
 
