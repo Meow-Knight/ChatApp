@@ -27,6 +27,7 @@ import com.google.firebase.storage.StorageTask
 import com.google.firebase.storage.UploadTask
 import com.lecaoviethuy.messengerapp.controllers.DatabaseController
 import com.lecaoviethuy.messengerapp.modelClasses.User
+import com.lecaoviethuy.messengerapp.utils.OnHasCallVideo
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_setting.*
 import kotlinx.android.synthetic.main.activity_setting.back
@@ -431,4 +432,8 @@ class SettingActivity : AppCompatActivity() {
         }
     }
 
+//    override fun onResume() {
+//        super.onResume()
+//        OnHasCallVideo.hasCallVideo(this@SettingActivity,FirebaseDatabase.getInstance().reference,firebaseUser!!.uid)
+//    }
 }

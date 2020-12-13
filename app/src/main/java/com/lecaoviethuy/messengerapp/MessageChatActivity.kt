@@ -1,8 +1,10 @@
 package com.lecaoviethuy.messengerapp
 
+import android.Manifest
 import android.app.Activity
 import android.app.ProgressDialog
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
@@ -11,6 +13,8 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.tasks.Continuation
@@ -48,6 +52,8 @@ class MessageChatActivity : AppCompatActivity() {
     private var isVisitUserDeleted = false
 
     companion object {
+        @JvmStatic
+        val REQUEST_CALL = 1
         @JvmStatic
         val REQUEST_IMAGE_CAPTURE = 813
         @JvmStatic
@@ -180,15 +186,58 @@ class MessageChatActivity : AppCompatActivity() {
         }
 
         //call phone
-        call_phone.setOnClickListener{
-            val number = mUser!!.getPhone()
-            val dial = "tel:$number"
-            val intent = Intent(Intent.ACTION_CALL, Uri.parse(dial))
-            startActivity(intent)
+        cv_call_phone.setOnClickListener{
+            makePhoneCall()
         }
 
+        // call video
+        cv_call_video.setOnClickListener{
+            var intent = Intent (this@MessageChatActivity, CallingActivity::class.java)
+            intent.putExtra("userCalling", firebaseUser!!.uid)
+            intent.putExtra("userRinging", userIdVisit)
+            intent.putExtra("kind", "1")
+            val callerRef = databaseRef!!.child("Users").child(userIdVisit)
+            callerRef.child("ringing").setValue(firebaseUser!!.uid)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        startActivity(intent)
+                    }
+                }
+        }
         // seen message action
         seenMessage(userIdVisit)
+    }
+
+    private fun makePhoneCall() {
+        val number = mUser!!.getPhone()
+        if (number != null && number != ""){
+            if (ContextCompat.checkSelfPermission(this@MessageChatActivity,
+                        Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED){
+                ActivityCompat.requestPermissions(this@MessageChatActivity, arrayOf(Manifest.permission.CALL_PHONE),
+                    REQUEST_CALL )
+            } else {
+                val dial = "tel:$number"
+                val intent = Intent(Intent.ACTION_CALL, Uri.parse(dial))
+                startActivity(intent)
+            }
+        } else {
+            Toast.makeText(this, "Not a phone number", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_CALL) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                makePhoneCall()
+            } else {
+                Toast.makeText(this, "permission denied", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     // how to send message to user
@@ -615,6 +664,11 @@ class MessageChatActivity : AppCompatActivity() {
             progressBar.dismiss()
         }
     }
+
+//    override fun onResume() {
+//        super.onResume()
+//        OnHasCallVideo.hasCallVideo(this@MessageChatActivity,databaseRef!!,firebaseUser!!.uid)
+//    }
 
     override fun onPause() {
         super.onPause()

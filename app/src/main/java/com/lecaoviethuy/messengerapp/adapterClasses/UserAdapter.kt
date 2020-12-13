@@ -179,7 +179,7 @@ class UserAdapter (mContext : Context,
                         }
 
                         if (chat.getSender() == chatUserId && chat.getReceiver() == firebaseUser.uid && !chat.getIsSeen()){
-                            lastMessageTxt.setTextAppearance(R.style.TextAppearance_AppCompat_Title)
+//                            lastMessageTxt.setTextAppearance(R.style.TextAppearance_AppCompat_Title)
                         }
                     }
                 }

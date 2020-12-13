@@ -4,11 +4,14 @@ import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.lecaoviethuy.messengerapp.modelClasses.User
+import com.lecaoviethuy.messengerapp.utils.OnHasCallVideo
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_visit_user_profile.*
 import kotlinx.android.synthetic.main.activity_visit_user_profile.back
@@ -101,4 +104,10 @@ class VisitUserProfileActivity : AppCompatActivity() {
             startActivity(intent)
         }
     }
+
+//    override fun onResume() {
+//        super.onResume()
+//        OnHasCallVideo.hasCallVideo(this@VisitUserProfileActivity, FirebaseDatabase.getInstance().reference
+//                 ,FirebaseAuth.getInstance().currentUser!!.uid)
+//    }
 }

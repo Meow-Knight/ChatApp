@@ -59,6 +59,10 @@ dependencies {
 
     implementation 'com.google.android.gms:play-services-auth:19.0.0'
 
+    // call video
+    implementation 'com.opentok.android:opentok-android-sdk:2.18.1'
+    implementation 'pub.devrel:easypermissions:3.0.0'
+
     // for other
     implementation 'de.hdodenhof:circleimageview:2.2.0'
     implementation 'com.squareup.picasso:picasso:2.71828'

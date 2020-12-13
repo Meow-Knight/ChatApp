@@ -20,13 +20,14 @@ import com.lecaoviethuy.messengerapp.fragments.SearchFragment
 import com.lecaoviethuy.messengerapp.modelClasses.Chat
 import com.lecaoviethuy.messengerapp.modelClasses.Status
 import com.lecaoviethuy.messengerapp.modelClasses.User
+import com.lecaoviethuy.messengerapp.utils.OnHasCallVideo
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
     private var mUser : FirebaseUser? = null
-
+    private var databaseRef : DatabaseReference? = null
     private var mViewPagerAdapter : ViewPagerAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -175,6 +176,8 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         AppController.updateStatus(Status.ONLINE)
         super.onResume()
+        databaseRef = FirebaseDatabase.getInstance().reference
+        OnHasCallVideo.hasCallVideo(this@MainActivity, databaseRef!!,mUser!!.uid)
     }
 
     override fun onBackPressed() {
