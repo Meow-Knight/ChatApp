@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "470452011288-e34j1d0nleqqm1h5kd9mn2mjdu8qsd24.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.lecaoviethuy.messengerapp",
+            "certificate_hash": "818cb8d773f79917a087abf3e3f951401f0554b0"
+          }
+        },
+        {
           "client_id": "470452011288-9udapfp504ern7tk5pfcf258p1kdh1a0.apps.googleusercontent.com",
           "client_type": 3
         }

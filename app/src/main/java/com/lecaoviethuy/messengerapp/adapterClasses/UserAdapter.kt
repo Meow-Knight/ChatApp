@@ -4,20 +4,22 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.lecaoviethuy.messengerapp.MessageChatActivity
-import com.lecaoviethuy.messengerapp.R
-import com.lecaoviethuy.messengerapp.VisitUserProfileActivity
+import com.lecaoviethuy.messengerapp.*
+import com.lecaoviethuy.messengerapp.controllers.DatabaseController
 import com.lecaoviethuy.messengerapp.databaseServices.OfflineDatabase
 import com.lecaoviethuy.messengerapp.modelClasses.Chat
 import com.lecaoviethuy.messengerapp.modelClasses.MessageString
@@ -25,7 +27,6 @@ import com.lecaoviethuy.messengerapp.modelClasses.Status
 import com.lecaoviethuy.messengerapp.modelClasses.User
 import com.squareup.picasso.Picasso
 import de.hdodenhof.circleimageview.CircleImageView
-import kotlinx.android.synthetic.main.activity_main.*
 
 class UserAdapter (mContext : Context,
                     mUsers : List<User>,
@@ -57,7 +58,7 @@ class UserAdapter (mContext : Context,
         var onLineTxt : CircleImageView
         var offLineTxt : CircleImageView
         var lastMessageTxt : TextView
-
+        var container : CardView
 
         init {
             userNameTxt = itemView.findViewById(R.id.username)
@@ -65,6 +66,7 @@ class UserAdapter (mContext : Context,
             onLineTxt  = itemView.findViewById(R.id.image_online)
             offLineTxt = itemView.findViewById(R.id.image_offline)
             lastMessageTxt = itemView.findViewById(R.id.message_last)
+            container = itemView.findViewById(R.id.container)
 
         }
     }
@@ -114,6 +116,26 @@ class UserAdapter (mContext : Context,
                 val intent = Intent(mContext, MessageChatActivity::class.java)
                 intent.putExtra("visit_id", user.getUid())
                 mContext.startActivity(intent)
+            }
+
+            // add delete message
+            holder.container.setOnLongClickListener {
+                val deleteDialog = AlertDialog.Builder(this.mContext)
+                deleteDialog.setTitle("Delete?")
+                    .setMessage("All message with this user will be deleted")
+                    .setPositiveButton(
+                        "YES"
+                    ) { _, _ ->
+                        MainActivity.startDeleteProgressBar(mContext)
+                        val curUser = FirebaseAuth.getInstance().currentUser
+                        DatabaseController.deleteMessage(curUser!!.uid, user.getUid()!!)
+                    }
+                    .setNegativeButton(
+                        "NO"
+                    ) { dialog, _ -> dialog.dismiss() }
+                deleteDialog.create().show()
+
+                true
             }
         } else {
             holder.onLineTxt.visibility = View.GONE

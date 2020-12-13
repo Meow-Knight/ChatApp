@@ -7,5 +7,10 @@ class DatabaseController {
             isDeleting = true
             ChatsController.deleteAllWithUserId(uid)
         }
+
+        fun deleteMessage(uid: String, curUid: String) {
+            isDeleting = true
+            ChatsController.deleteMessage(uid, curUid)
+        }
     }
 }

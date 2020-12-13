@@ -1,8 +1,11 @@
 package com.lecaoviethuy.messengerapp
 
+import android.app.ProgressDialog
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.widget.ProgressBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.viewpager.widget.ViewPager
@@ -191,6 +194,8 @@ class MainActivity : AppCompatActivity() {
         var unreadCountListener : ValueEventListener? = null
         var loadProfileListener : ValueEventListener? = null
 
+        var deleteProgressDialog : ProgressDialog? = null
+
         fun clearAllListener(){
             if(ref != null && unreadCountListener != null){
                 ref!!.removeEventListener(unreadCountListener!!)
@@ -199,6 +204,19 @@ class MainActivity : AppCompatActivity() {
             if(refUser != null && loadProfileListener != null){
                 refUser!!.removeEventListener(loadProfileListener!!)
             }
+        }
+
+        fun startDeleteProgressBar(context: Context){
+            if (deleteProgressDialog == null){
+                deleteProgressDialog = ProgressDialog(context)
+                deleteProgressDialog!!.setMessage("deleting, please wait...")
+                deleteProgressDialog!!.setCancelable(false)
+            }
+            deleteProgressDialog!!.show()
+        }
+
+        fun stopDeleteProgressBar(){
+            deleteProgressDialog!!.dismiss()
         }
     }
 }

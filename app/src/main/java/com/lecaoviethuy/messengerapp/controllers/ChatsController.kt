@@ -13,6 +13,7 @@ class ChatsController {
                         .reference
                         .child("Chats")
         var deleteAllListener : ValueEventListener? = null
+        var deleteMessage : ValueEventListener? = null
 
         /**
          * delete chats have receiver or sender equals with uid on realtime-database/chats
@@ -31,6 +32,9 @@ class ChatsController {
                                     // check if this is a image message then delete it in storage
 
                                     if (chat.getReceiver().equals(uid) || chat.getSender().equals(uid)) {
+                                        if(chat.getUrl() != null){
+                                            StorageController.deleteFile("Chat Images/" + chat.getMessageId())
+                                        }
                                         chatReference.child(chat.getMessageId()!!).removeValue()
                                     }
                                 }
@@ -55,6 +59,46 @@ class ChatsController {
             if(deleteAllListener != null){
                 chatReference.removeEventListener(deleteAllListener!!)
             }
+            if(deleteMessage != null){
+                chatReference.removeEventListener(deleteMessage!!)
+            }
+        }
+
+        fun deleteMessage(curUid : String, uid : String){
+            deleteMessage = chatReference.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if(!isDeleting){
+                        isDeleting = true
+                        try {
+                            for (shot in snapshot.children) {
+                                val chat = shot.getValue(Chat::class.java)
+
+                                if(chat != null){
+                                    // check if this is a image message then delete it in storage
+
+                                    if ((chat.getReceiver().equals(uid) && chat.getSender().equals(curUid))
+                                                || (chat.getReceiver().equals(curUid) && chat.getSender().equals(uid))) {
+                                        if(!chat.getUrl().isNullOrEmpty()){
+                                            StorageController.deleteFile("Chat Images/" + chat.getMessageId() + ".jpg")
+                                        }
+                                        chatReference.child(chat.getMessageId()!!).removeValue()
+                                    }
+                                }
+                            }
+
+                            ChatListController.deleteMessage(curUid, uid)
+                        } catch (e : Exception){
+                            e.printStackTrace()
+                        }
+                    }
+
+                    isDeleting = false
+                    clearDeleteAllListener()
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                }
+            })
         }
     }
 }
