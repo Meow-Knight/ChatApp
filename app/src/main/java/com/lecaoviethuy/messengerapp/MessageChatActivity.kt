@@ -11,6 +11,7 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -47,6 +48,8 @@ class MessageChatActivity : AppCompatActivity() {
     var notify = false
     var apiService : APIService?= null
     var mUser: User?= null
+    private var blockPerson : String = ""
+
     lateinit var recyclerViewChats : RecyclerView
 
     private var isVisitUserDeleted = false
@@ -160,6 +163,10 @@ class MessageChatActivity : AppCompatActivity() {
                 Intent.createChooser(intent, "Pick Image"),
                 MessageChatActivity.CHANGE_CHAT_BG_IMAGE
             )
+        }
+
+        block_btn.setOnClickListener {
+            toggleBlockPerson()
         }
 
         back_button.setOnClickListener {
@@ -311,38 +318,14 @@ class MessageChatActivity : AppCompatActivity() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val chatInfo: ChatInfo = snapshot.getValue(ChatInfo::class.java) ?: return
 
-                val backgroundChatImageUrl: String = chatInfo!!.getbackgroundChatImageUrl()
-                if (backgroundChatImageUrl.isEmpty())
-                    return
+                // get block person status
+                blockPerson = chatInfo!!.getBlockPerson()
+                configBlockLayout(blockPerson)
 
-                // fill background image
-                Picasso.get()
-                    .load(backgroundChatImageUrl)
-                    .resize(container.width, container.height)
-                    .centerCrop()
-                    .into(object : Target {
-                        override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
-                            container.background = BitmapDrawable(resources, bitmap)
-                        }
+                // fill background chat image
+                val backgroundChatImageUrl: String = chatInfo!!.getBackgroundChatImageUrl()
+                fillBackgroundImage(backgroundChatImageUrl)
 
-                        override fun onBitmapFailed(error: Exception?, errorDrawable: Drawable?) {
-                            error?.printStackTrace()
-                            Toast.makeText(
-                                this@MessageChatActivity,
-                                "Load background chat image fail",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-
-                        override fun onPrepareLoad(placeHolderDrawable: Drawable?) {
-                            null
-                        }
-
-                    })
-
-                // make something transparent
-                header.setBackgroundColor(resources.getColor(android.R.color.transparent))
-                divider_line.setBackgroundColor(resources.getColor(android.R.color.transparent))
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -584,17 +567,30 @@ class MessageChatActivity : AppCompatActivity() {
         progressBar.setMessage("Background image is uploading, please wait...")
         progressBar.show()
 
+//        val compressedImageFile: File = Compressor(this)
+//            .setMaxWidth(1000)
+//            .setMaxHeight(1000)
+//            .setCompressFormat(Bitmap.CompressFormat.JPEG)
+//            .compressToFile(imageUri!!.toFile())
+
         if (imageUri!= null){
-            val backgroundImageRef: DatabaseReference = databaseRef!!
+            val backgroundImageUserRef: DatabaseReference = databaseRef!!
                 .child("ChatList")
                 .child(firebaseUser!!.uid)
                 .child(userIdVisit)
                 .child("backgroundChatImageUrl")
 
-            backgroundImageRef.removeValue()
+            val backgroundImageVisitUserRef: DatabaseReference = databaseRef!!
+                .child("ChatList")
+                .child(userIdVisit)
+                .child(firebaseUser!!.uid)
+                .child("backgroundChatImageUrl")
+
+            backgroundImageUserRef.removeValue()
                 .addOnCompleteListener {
                     val storageReference =  storageRef!!.child("Background Chat Images")
-                    val fileRef = storageReference.child(firebaseUser!!.uid + "_" + userIdVisit + ".jpg")
+                    val fileName: String = ChatInfo.getBackgroundChatImageFileName(firebaseUser!!.uid, userIdVisit)
+                    val fileRef = storageReference.child(fileName)
                     val uploadTask : StorageTask<*>
                     uploadTask = fileRef.putFile(imageUri)
                     uploadTask.addOnSuccessListener{ snapshot ->
@@ -603,7 +599,9 @@ class MessageChatActivity : AppCompatActivity() {
                             val downloadUri: Uri = uriResult
                             val imageUrl = downloadUri.toString()
 
-                            backgroundImageRef.setValue(imageUrl)
+                            backgroundImageUserRef.setValue(imageUrl)
+                            backgroundImageVisitUserRef.setValue(imageUrl)
+
                             progressBar.dismiss()
                         }
                     }.addOnFailureListener {
@@ -665,10 +663,96 @@ class MessageChatActivity : AppCompatActivity() {
         }
     }
 
-//    override fun onResume() {
-//        super.onResume()
-//        OnHasCallVideo.hasCallVideo(this@MessageChatActivity,databaseRef!!,firebaseUser!!.uid)
-//    }
+    private fun fillBackgroundImage(backgroundChatImageUrl: String) {
+        if (backgroundChatImageUrl.isEmpty())
+            return
+
+        Picasso.get()
+            .load(backgroundChatImageUrl)
+            .resize(container.width, container.height)
+            .centerCrop()
+            .into(object : Target {
+                override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
+                    container.background = BitmapDrawable(resources, bitmap)
+                }
+
+                override fun onBitmapFailed(error: Exception?, errorDrawable: Drawable?) {
+                    error?.printStackTrace()
+                    Toast.makeText(
+                        this@MessageChatActivity,
+                        "Load background chat image fail",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                override fun onPrepareLoad(placeHolderDrawable: Drawable?) {
+                    null
+                }
+
+            })
+
+        // make something transparent
+        header.setBackgroundColor(resources.getColor(android.R.color.transparent))
+        divider_line.setBackgroundColor(resources.getColor(android.R.color.transparent))
+    }
+
+    // Block person feature
+    private fun toggleBlockPerson() {
+        val blockPersonUserRef: DatabaseReference = databaseRef!!
+            .child("ChatList")
+            .child(firebaseUser!!.uid)
+            .child(userIdVisit)
+            .child("blockPerson")
+
+        val blockPersonVisitUserRef: DatabaseReference = databaseRef!!
+            .child("ChatList")
+            .child(userIdVisit)
+            .child(firebaseUser!!.uid)
+            .child("blockPerson")
+
+        if (blockPerson.isNotEmpty()) {
+            blockPersonUserRef.removeValue()
+            blockPersonVisitUserRef.removeValue()
+        } else {
+            blockPersonUserRef.setValue(firebaseUser!!.uid)
+            blockPersonVisitUserRef.setValue(firebaseUser!!.uid)
+        }
+    }
+
+    private fun configBlockLayout(blockPerson: String) {
+        if (blockPerson.isNotEmpty()) {
+            relative_layout_bottom.visibility = View.GONE
+            relative_layout_bottom_block.visibility = View.VISIBLE
+            cv_call_phone.visibility = View.GONE
+            cv_call_video.visibility = View.GONE
+
+            Picasso.get()
+                .load(R.drawable.icon_unlock)
+                .noFade()
+                .into(block_btn)
+
+            if (blockPerson == firebaseUser!!.uid) {
+                block_text.text = "You have been block ${username_mchat.text} already"
+                cv_block.setCardBackgroundColor(resources.getColor(R.color.primary))
+                block_btn.isEnabled = true
+            } else {
+                block_text.text = "You can't send message to this person now"
+                cv_block.setCardBackgroundColor(resources.getColor(R.color.lightPrimary))
+                block_btn.isEnabled = false
+            }
+
+        } else {
+            relative_layout_bottom.visibility = View.VISIBLE
+            relative_layout_bottom_block.visibility = View.GONE
+            cv_call_phone.visibility = View.VISIBLE
+            cv_call_video.visibility = View.VISIBLE
+
+            Picasso.get()
+                .load(R.drawable.icon_block)
+                .noFade()
+                .into(block_btn)
+        }
+    }
 
     override fun onPause() {
         super.onPause()

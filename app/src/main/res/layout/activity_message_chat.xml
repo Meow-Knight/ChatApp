@@ -11,7 +11,7 @@
     <RelativeLayout
         android:id="@+id/header"
         android:layout_width="match_parent"
-        android:layout_height="215dp"
+        android:layout_height="216dp"
         android:background="@drawable/header_eclipse">
 
         <Button
@@ -63,16 +63,16 @@
             android:layout_below="@id/profile_image_mchat"
             android:text="@string/tmp_string"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginTop="4dp"/>
 
         <androidx.cardview.widget.CardView
             android:id="@+id/cv_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="18dp"
+            app:cardCornerRadius="4dp"
             android:layout_below="@id/username_mchat"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="2dp"
             android:backgroundTint="@color/gray"
             android:elevation="0dp">
 
@@ -81,151 +81,206 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingHorizontal="8dp"
-                android:paddingVertical="4dp"
+                android:paddingVertical="2dp"
                 android:fontFamily="@font/segoeui_semibold"
                 android:textSize="10dp"
                 android:textColor="@color/white"
                 android:text="@string/tmp_string" />
 
         </androidx.cardview.widget.CardView>
-
-        <LinearLayout
-            android:id="@+id/contact"
+        <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
             android:layout_below="@id/cv_status"
-            android:layout_marginTop="10dp"
-            android:orientation="horizontal">
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp"
+            android:id="@+id/rl_function_group" >
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cv_block"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                app:cardCornerRadius="50dp"
+                android:backgroundTint="@color/primary"
+                app:cardElevation="0dp">
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/block_btn"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/icon_block" />
+
+            </androidx.cardview.widget.CardView>
+
             <androidx.cardview.widget.CardView
                 android:id="@+id/cv_call_phone"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                app:cardCornerRadius="16dp"
-                android:layout_marginStart="5dp"
-                android:layout_marginEnd="5dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                app:cardCornerRadius="50dp"
+                android:layout_toRightOf="@id/cv_block"
+                android:layout_marginLeft="16dp"
                 android:backgroundTint="@color/secondary"
                 app:cardElevation="0dp">
 
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/call_phone"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="8dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
                     android:src="@drawable/icon_phone" />
+
             </androidx.cardview.widget.CardView>
+
             <androidx.cardview.widget.CardView
                 android:id="@+id/cv_call_video"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                app:cardCornerRadius="16dp"
-                android:layout_marginStart="5dp"
-                android:layout_marginEnd="5dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                app:cardCornerRadius="50dp"
+                android:layout_toRightOf="@id/cv_call_phone"
+                android:layout_marginLeft="16dp"
                 android:backgroundTint="@color/secondary"
                 app:cardElevation="0dp">
 
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/call_video"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="8dp"
-                    android:src="@drawable/ic_baseline_videocam_24" />
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/icon_call_video" />
+
             </androidx.cardview.widget.CardView>
-        </LinearLayout>
+
+        </RelativeLayout>
+
     </RelativeLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_chats"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="4dp"
         android:layout_marginHorizontal="24dp"
         android:backgroundTint="@android:color/transparent"
         android:layout_below="@+id/header"
-        android:layout_above="@+id/relative_layout_bottom"/>
+        android:layout_above="@+id/relative_layout_bottom_area"/>
 
-    <RelativeLayout
-        android:id="@+id/relative_layout_bottom"
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:id="@+id/relative_layout_bottom_area"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:background="@android:color/white">
-
-        <View
-            android:id="@+id/divider_line"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/lightGray" />
+        android:orientation="vertical"
+        android:layout_alignParentBottom="true">
 
         <RelativeLayout
+            android:id="@+id/relative_layout_bottom"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/divider_line"
-            android:layout_marginStart="24dp"
-            android:layout_marginVertical="12dp"
-            android:layout_alignParentStart="true"
-            android:layout_toStartOf="@id/attach_image_file_btn"
-            android:backgroundTint="@android:color/transparent">
+            android:background="@android:color/white"
+            android:visibility="visible">
 
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cv_text_message_area"
+            <View
+                android:id="@+id/divider_line"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/lightGray" />
+
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="0dp"
-                android:backgroundTint="@color/lighterBlue">
+                android:layout_below="@id/divider_line"
+                android:layout_marginLeft="24dp"
+                android:layout_marginVertical="12dp"
+                android:layout_alignParentStart="true"
+                android:layout_toLeftOf="@id/attach_image_file_btn"
+                android:backgroundTint="@android:color/transparent">
 
-                <RelativeLayout
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cv_text_message_area"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:backgroundTint="@android:color/transparent">
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="50dp"
+                    app:cardElevation="0dp"
+                    android:backgroundTint="@color/lighterBlue">
 
-                    <EditText
-                        android:id="@+id/text_message"
-                        style="@style/Text_regular"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="12dp"
-                        android:layout_marginVertical="8dp"
-                        android:layout_alignParentStart="true"
-                        android:layout_toStartOf="@id/send_message_btn"
-                        android:background="@null"
-                        android:hint="Write your message here..." />
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:backgroundTint="@android:color/transparent">
 
-                    <ImageView
-                        android:id="@+id/send_message_btn"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:layout_centerVertical="true"
-                        android:layout_marginEnd="8dp"
-                        android:src="@drawable/icon_send" />
+                        <EditText
+                            android:id="@+id/text_message"
+                            style="@style/Text_regular"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="12dp"
+                            android:layout_marginVertical="8dp"
+                            android:layout_alignParentStart="true"
+                            android:layout_toStartOf="@id/send_message_btn"
+                            android:background="@null"
+                            android:hint="Write your message here..." />
 
-                </RelativeLayout>
+                        <ImageView
+                            android:id="@+id/send_message_btn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:layout_marginEnd="8dp"
+                            android:src="@drawable/icon_send" />
 
-            </androidx.cardview.widget.CardView>
+                    </RelativeLayout>
+
+                </androidx.cardview.widget.CardView>
+
+            </RelativeLayout>
+
+            <ImageView
+                android:id="@+id/attach_image_file_btn"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="8dp"
+                android:src="@drawable/icon_gallery"
+                android:layout_toStartOf="@id/take_picture_btn"
+                android:layout_centerVertical="true"/>
+
+            <ImageView
+                android:id="@+id/take_picture_btn"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/icon_take_a_picture"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="24dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"/>
 
         </RelativeLayout>
 
-        <ImageView
-            android:id="@+id/attach_image_file_btn"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_marginStart="8dp"
-            android:src="@drawable/icon_gallery"
-            android:layout_toStartOf="@id/take_picture_btn"
-            android:layout_centerVertical="true"/>
+        <RelativeLayout
+            android:id="@+id/relative_layout_bottom_block"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white"
+            android:visibility="gone">
 
-        <ImageView
-            android:id="@+id/take_picture_btn"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@drawable/icon_take_a_picture"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="24dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"/>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/lightGray" />
 
-    </RelativeLayout>
+            <TextView
+                android:id="@+id/block_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tmp_string"
+                android:layout_marginVertical="20dp"
+                style="@style/Text_regular"
+                android:textColor="@color/primary"
+                android:layout_centerHorizontal="true" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
 
 </RelativeLayout>
