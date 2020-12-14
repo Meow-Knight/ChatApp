@@ -2,18 +2,27 @@ package com.lecaoviethuy.messengerapp
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.Dialog
 import android.app.ProgressDialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.net.Uri
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.view.View
+import android.view.Window
+import android.view.WindowManager
+import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.tasks.Continuation
@@ -25,6 +34,7 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.StorageTask
 import com.google.firebase.storage.UploadTask
+import com.lecaoviethuy.messengerapp.common.SaveFunctionalInterface
 import com.lecaoviethuy.messengerapp.controllers.DatabaseController
 import com.lecaoviethuy.messengerapp.modelClasses.User
 import com.lecaoviethuy.messengerapp.utils.OnHasCallVideo
@@ -42,6 +52,7 @@ import kotlinx.android.synthetic.main.activity_setting.set_website
 import kotlinx.android.synthetic.main.activity_setting.username_visit_user
 import java.io.ByteArrayOutputStream
 import java.util.*
+import java.util.function.Consumer
 import kotlin.collections.HashMap
 
 class SettingActivity : AppCompatActivity() {
@@ -55,6 +66,8 @@ class SettingActivity : AppCompatActivity() {
     private var coverChecker : String? = ""
     private var socialChecker : String?= ""
     private var currentUser : User?=null
+
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_setting)
@@ -73,6 +86,7 @@ class SettingActivity : AppCompatActivity() {
                     if ((user!!.getUid()).equals(firebaseUser!!.uid)) {
                         currentUser = user
                         username_visit_user.text = user.getUsername()
+                        phone_number.text = user.getPhone()
                         Picasso.get().load(user.getProfile()).into(profile_image_visit_user)
                         Picasso.get().load(user.getCover()).into(cover_image_visit_user)
                         var fbLink = user.getFacebook()
@@ -110,6 +124,7 @@ class SettingActivity : AppCompatActivity() {
         initEvents()
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     private fun initEvents() {
         profile_image_visit_user.setOnClickListener {
             pickImageFromLibrary()
@@ -136,6 +151,7 @@ class SettingActivity : AppCompatActivity() {
         }
 
         set_name_phone.setOnClickListener {
+            Log.d("check__", "in")
             setPhoneAndName()
         }
 
@@ -160,7 +176,8 @@ class SettingActivity : AppCompatActivity() {
                     .show()
             }
         }
-        /*
+
+        /**
         * When you click on yes delete button
         * Database Controller will handle delete your account information in realtime database
         * set DatabaseController#isDeleting = true and false when everything deleted
@@ -215,38 +232,39 @@ class SettingActivity : AppCompatActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     private fun setPhoneAndName() {
-        val builder : AlertDialog.Builder = AlertDialog.Builder(this@SettingActivity,R.style.Theme_AppCompat_DayNight_Dialog_Alert)
-        builder.setTitle("Change info")
-        val mView = layoutInflater.inflate(R.layout.dialog_phone_name,null)
-        val editTextName = mView.findViewById<EditText>(R.id.set_name)
-        editTextName.hint = currentUser!!.getUsername()
-        val editTextPhone = mView.findViewById<EditText>(R.id.set_phone)
-        editTextPhone.hint = currentUser!!.getPhone()
-        builder.setView(mView)
-        builder.setPositiveButton("Change", DialogInterface.OnClickListener{
-                _, _ ->
-            val name = editTextName.text.toString()
-            val phone = editTextPhone.text.toString()
-
-            if (name == "" && phone == ""){
-                Toast.makeText(this,"Please write something...", Toast.LENGTH_SHORT).show()
-            } else {
-                if (name != ""){
-                    saveName(name)
-                }
-                if (phone != "") {
-                    savePhone(phone)
-                }
+        val action1 = object : SaveFunctionalInterface{
+            override fun apply(value: String) {
+                saveName(value)
             }
-        })
-        builder.setNegativeButton("Cancel", DialogInterface.OnClickListener{
-                dialog, _ ->
-            dialog.cancel()
-        })
+        }
 
-        builder.show()
+        val action2 = object : SaveFunctionalInterface{
+            override fun apply(value: String) {
+                savePhone(value)
+            }
+        }
 
+        showInputDialog("Change username and phone number",
+                "Input your username and phone number below",
+            currentUser!!.getUsername()!!,
+            currentUser!!.getPhone(),
+            action1,
+            action2)
+
+        Log.d("check__", currentUser!!.getPhone().toString())
+    }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun setName() {
+        val action = object : SaveFunctionalInterface{
+            override fun apply(value: String) {
+                saveName(value)
+            }
+        }
+
+        showInputDialog("Change username", "Input your username below", "username", null, action, null)
     }
 
     private fun savePhone(phone: String) {
@@ -260,7 +278,10 @@ class SettingActivity : AppCompatActivity() {
         }
     }
 
-    private fun saveName(name :String) {
+    private fun saveName(name : String) {
+        if (name.isEmpty()){
+            Toast.makeText(this, "Invalid Name!", Toast.LENGTH_LONG).show()
+        }
         val mapName = HashMap<String,Any>()
         mapName["username"] = name
         mapName["search"] = name.toLowerCase(Locale.ROOT)
@@ -272,41 +293,95 @@ class SettingActivity : AppCompatActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     private fun setSocialLink() {
-        val builder : AlertDialog.Builder = AlertDialog.Builder(
-            this,
-            R.style.Theme_AppCompat_DayNight_Dialog_Alert
-        )
-        if (socialChecker == "website"){
-            builder.setTitle("Write URL:")
-        } else {
-            builder.setTitle("Write username")
-        }
+        var header = ""
+        var content = ""
+        var hint = ""
 
-        val editText = EditText(this)
+        when(socialChecker){
+            "facebook" -> {
+                header = "Change your facebook link"
+                content = "Input your facebook below"
+                hint = "http://facebook.com/..."
+            }
 
-        if (socialChecker == "website"){
-            editText.hint = "e.g www.google.com"
-        } else {
-            editText.hint = "e.g abcde"
-        }
+            "instagram" -> {
+                header = "Change your instagram link"
+                content = "Input your instagram below"
+                hint = "http://instagram.com/..."
+            }
 
-        builder.setView(editText)
-        builder.setPositiveButton("create") { _, _ ->
-            val str = editText.text.toString()
-
-            if (str == "") {
-                Toast.makeText(this, "Please write something...", Toast.LENGTH_SHORT).show()
-            } else {
-                saveSocialLink(str)
+            "website" -> {
+                header = "Change your website link"
+                content = "Input your website below"
+                hint = "http://github.com/..."
             }
         }
 
-        builder.setNegativeButton("Cancel") { dialog, _ ->
-            dialog.cancel()
+        val action = object : SaveFunctionalInterface{
+            override fun apply(value : String) {
+                saveSocialLink(value)
+            }
+
+        }
+        showInputDialog(header, content, hint, null, action, null)
+    }
+
+    /**
+     * This function will create a dialog to input value to change
+     * @param header give header title of dialog
+     * @param content give what user have to do
+     * @param hint1 hint of edittext where user input new value
+     * @param hint2 is an option, default input dialog have one input field at least, it's function like hint1
+     * @param action1 is a functional interface, just do an action when click on apply button on dialog
+     * @param action2 is an option, and it's function like action1
+     * */
+    @RequiresApi(Build.VERSION_CODES.N)
+    fun showInputDialog(header : String, content : String,
+                        hint1 : String, hint2 : String?,
+                        action1 : SaveFunctionalInterface, action2 : SaveFunctionalInterface?){
+
+        val inputDialog = Dialog(this)
+        inputDialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        inputDialog.setContentView(R.layout.dialog_input)
+
+        val tvHeader = inputDialog.findViewById<TextView>(R.id.tv_input_header)
+        val tvInputContent = inputDialog.findViewById<TextView>(R.id.tv_content_input)
+        val etInput = inputDialog.findViewById<EditText>(R.id.et_input)
+        val btCancel = inputDialog.findViewById<Button>(R.id.bt_cancel)
+        val btApply = inputDialog.findViewById<Button>(R.id.bt_apply)
+
+        var etInput2 : EditText? = null
+        if(hint2 != null){
+            etInput2 = inputDialog.findViewById(R.id.et_input2)
+            etInput2.visibility = View.VISIBLE
+            etInput2.hint = hint2
         }
 
-        builder.show()
+        val window = inputDialog.window
+        if(window != null){
+            window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT)
+            window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        }
+
+        tvHeader.text = header
+        tvInputContent.text = content
+        etInput.hint = hint1
+
+        btCancel.setOnClickListener {
+            inputDialog.dismiss()
+        }
+
+        btApply.setOnClickListener {
+            if(hint2 != null){
+                action2!!.apply(etInput2!!.text.toString())
+            }
+            action1.apply(etInput.text.toString())
+            inputDialog.dismiss()
+        }
+
+        inputDialog.show()
     }
 
     private fun saveSocialLink(str: String) {
@@ -361,7 +436,7 @@ class SettingActivity : AppCompatActivity() {
         }
     }
 
-    private fun uploadBitmapImageToDatabase(imageBitmap: Bitmap) {
+    fun uploadBitmapImageToDatabase(imageBitmap: Bitmap) {
         val progressBar = ProgressDialog(this)
         progressBar.setMessage("image is uploading, please wait...")
         progressBar.show()
@@ -431,9 +506,4 @@ class SettingActivity : AppCompatActivity() {
             coverChecker = ""
         }
     }
-
-//    override fun onResume() {
-//        super.onResume()
-//        OnHasCallVideo.hasCallVideo(this@SettingActivity,FirebaseDatabase.getInstance().reference,firebaseUser!!.uid)
-//    }
 }

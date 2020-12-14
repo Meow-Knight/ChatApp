@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_margin="16dp"
+    android:background="@drawable/bg_input_dialog"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/tv_input_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/segoeui_semibold"
+        android:padding="12dp"
+        android:textSize="18sp"
+        android:gravity="center"
+        android:textColor="@android:color/white"
+        android:background="@drawable/bg_text_header_dialog"
+        android:text="Header Input"/>
+
+    <LinearLayout
+        android:padding="16dp"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/tv_content_input"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:fontFamily="@font/segoe_ui"
+            android:textColor="@android:color/black"
+            android:text="input value"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <EditText
+            android:id="@+id/et_input"
+            android:layout_marginTop="16dp"
+            android:hint="input value"
+            android:fontFamily="@font/segoe_ui"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:padding="12dp"/>
+
+        <EditText
+            android:id="@+id/et_input2"
+            android:visibility="gone"
+            android:layout_marginTop="10dp"
+            android:hint="input value"
+            android:fontFamily="@font/segoe_ui"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:padding="12dp"/>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:id="@+id/bt_cancel"
+                android:text="Cancel"
+                android:fontFamily="@font/segoeui_semibold"
+                android:layout_marginEnd="10dp"
+                android:background="@drawable/bg_cancel_button"
+                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <Button
+                android:id="@+id/bt_apply"
+                android:background="@drawable/bg_apply_button"
+                android:text="Apply"
+                android:textColor="@color/white"
+                android:fontFamily="@font/segoeui_semibold"
+                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>
