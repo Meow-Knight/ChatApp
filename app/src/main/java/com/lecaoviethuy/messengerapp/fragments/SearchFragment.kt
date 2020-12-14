@@ -92,11 +92,14 @@ class SearchFragment : Fragment() {
 
     private fun searchForUser (str :String, context: Context){
         val firebaseUserID = FirebaseAuth.getInstance().currentUser!!.uid
-        val queryUser = FirebaseDatabase.getInstance().reference.child("Users")
+        val queryUserByName = FirebaseDatabase.getInstance().reference.child("Users")
             .orderByChild("search")
-            .startAt(str)
-            .endAt(str + "\uf8ff")
-        queryUser.addValueEventListener(object :  ValueEventListener{
+            .startAt(str).endAt(str + "\uf8ff")
+
+        val queryUserByPhone = FirebaseDatabase.getInstance().reference.child("Users")
+            .orderByChild("phone")
+            .startAt(str).endAt(str + "\uF8FF")
+        queryUserByName.addValueEventListener(object :  ValueEventListener{
             override fun onCancelled(error: DatabaseError) {
 
             }
@@ -110,8 +113,23 @@ class SearchFragment : Fragment() {
                         (mUsers as ArrayList<User>).add(user)
                     }
                 }
-                userAdapter = UserAdapter(context , mUsers!!, false)
-                rvUsers!!.adapter = userAdapter
+
+                queryUserByPhone.addValueEventListener(object : ValueEventListener{
+                    override fun onCancelled(error: DatabaseError) {
+
+                    }
+
+                    override fun onDataChange(p0: DataSnapshot) {
+                        for (snapshot in p0.children){
+                            val user : User? = snapshot.getValue(User::class.java)
+                            if (!(user!!.getUid()).equals(firebaseUserID)){
+                                (mUsers as ArrayList<User>).add(user)
+                            }
+                        }
+                        userAdapter = UserAdapter(context , mUsers!!, false)
+                        rvUsers!!.adapter = userAdapter
+                    }
+                })
             }
         })
     }
