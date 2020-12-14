@@ -11,48 +11,16 @@ class UserController {
         val usersReference = FirebaseDatabase.getInstance()
             .reference
             .child("Users")
-        var deleteAllListener : ValueEventListener? = null
-        var isDeleting = false
 
         /**
          * delete child of realtime-database/users having key is uid
          * @param uid: it is user id on authentication firebase and a note on realtime-database/users
          * */
-        fun deleteAllUser(uid : String){
-            deleteAllListener = usersReference.addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    if (!isDeleting){
-                        try {
-                            for (shot in snapshot.children) {
-                                if (shot.key == uid){
-                                    val user = shot.getValue(User::class.java)
-                                    usersReference.child(shot.key!!).removeValue()
-                                    break
-                                }
-                            }
-
-                            clearDeleteAllListener()
-
-                        } catch (e : Exception){
-                            e.printStackTrace()
-                        }
-
-                        isDeleting = false
-                        DatabaseController.isDeleting = false
-                        clearDeleteAllListener()
-                    }
-
+        fun deleteUser(uid : String){
+            usersReference.child(uid).removeValue()
+                .addOnSuccessListener {
+                    DatabaseController.isDeleting = false
                 }
-
-                override fun onCancelled(error: DatabaseError) {
-                }
-            })
-        }
-
-        public fun clearDeleteAllListener(){
-            if(deleteAllListener != null){
-                usersReference.removeEventListener(deleteAllListener!!)
-            }
         }
     }
 

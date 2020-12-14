@@ -5,19 +5,19 @@ import com.google.firebase.storage.FirebaseStorage
 
 class StorageController {
     companion object{
-        fun deleteFile(url : String){
+        fun deleteFile(path : String){
             try {
                 FirebaseStorage.getInstance()
-                    .getReference()
-                    .child(url)
+                    .reference
+                    .child(path)
                     .delete()
                     .addOnSuccessListener {
                         Log.d("check_delete", "success delete image")
                     }.addOnFailureListener {
-                        Log.d("check_delete", "fail delete image")
+                        Log.d("check_delete", path)
                     }
             } catch (e : Exception){
-                Log.d("check", url)
+                Log.d("check", path)
             }
         }
     }
